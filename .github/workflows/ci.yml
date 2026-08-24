@@ -15,7 +15,33 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: messanga11_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d messanga11_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_INTEGRATION_URL: postgresql://postgres:postgres@127.0.0.1:5432/messanga11_test
+      REDIS_INTEGRATION_URL: redis://127.0.0.1:6379
     strategy:
       fail-fast: false
       matrix:
@@ -45,5 +71,14 @@ jobs:
       - name: Run tests
         run: npm run test:coverage
 
-      - name: Validate package
-        run: npm run check:package
+      - name: Build packages
+        run: npm run build
+
+      - name: Validate package tarballs
+        run: npm run check:packages
+
+      - name: Install and smoke-test package tarballs
+        run: npm run check:tarballs
+
+      - name: Build Next.js and Expo from packed core
+        run: npm run check:fixtures

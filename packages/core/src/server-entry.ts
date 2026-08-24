@@ -2,6 +2,7 @@ export type {
   AccessDecision,
   AccessGrant,
   ActorId,
+  ActorType,
   AuditEvent,
   AuditOutcome,
   AuditPhase,
@@ -13,6 +14,7 @@ export type {
   InternalErrorReporterPort,
   OperationName,
   Permission,
+  PreAuthenticationRateLimitPort,
   ProtectedOperationPorts,
   PublicCoreError,
   QuotaDecision,
@@ -29,6 +31,7 @@ export type {
 } from "./security";
 export {
   ActorIdSchema,
+  ActorTypeSchema,
   AuthenticatedRequestContextSchema,
   CoreError,
   isAccessGrant,

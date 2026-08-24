@@ -1,6 +1,11 @@
 * @Messanga11
 
 /.github/ @Messanga11
-/src/security/ @Messanga11
-/src/server/ @Messanga11
-/src/trpc/ @Messanga11
+/packages/core/src/security/ @Messanga11
+/packages/core/src/server/ @Messanga11
+/packages/core/src/trpc/ @Messanga11
+/packages/auth-oidc/ @Messanga11
+/packages/tenancy/ @Messanga11
+/packages/adapter-postgres/ @Messanga11
+/packages/adapter-redis/ @Messanga11
+/.github/workflows/release.yml @Messanga11

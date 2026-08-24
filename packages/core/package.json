@@ -27,6 +27,26 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./events": {
+      "import": {
+        "types": "./dist/events.d.ts",
+        "default": "./dist/events.js"
+      },
+      "require": {
+        "types": "./dist/events.d.cts",
+        "default": "./dist/events.cjs"
+      }
+    },
+    "./policy": {
+      "import": {
+        "types": "./dist/policy.d.ts",
+        "default": "./dist/policy.js"
+      },
+      "require": {
+        "types": "./dist/policy.d.cts",
+        "default": "./dist/policy.cjs"
+      }
+    },
     "./server": {
       "import": {
         "types": "./dist/server.d.ts",

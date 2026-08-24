@@ -1,6 +1,13 @@
 {
   "files": {
-    "includes": ["**", "!dist"]
+    "includes": [
+      "**",
+      "!**/coverage",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/.expo",
+      "!**/.next"
+    ]
   },
   "formatter": {
     "enabled": true,

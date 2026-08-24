@@ -1,0 +1,29 @@
+{
+  "name": "@messanga11/next-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./router": "./src/server/runtime.ts"
+  },
+  "scripts": {
+    "build": "next build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.thresholds.lines=80 --coverage.thresholds.statements=80",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@messanga11/core": "^0.2.0",
+    "@messanga11/project-fixture": "0.0.0",
+    "@trpc/client": "^11.18.0",
+    "@trpc/server": "^11.18.0",
+    "next": "^16.3.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^30.0.1",
+    "vitest": "^4.1.11"
+  }
+}

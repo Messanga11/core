@@ -22,7 +22,7 @@ export function createTestContext(
   overrides: Readonly<Record<string, unknown>> = {},
 ) {
   return AuthenticatedRequestContextSchema.parse({
-    actor: { id: "actor:test" },
+    actor: { id: "actor:test", type: "human" },
     requestId: "request:test",
     tenantId: "tenant:test",
     ...overrides,

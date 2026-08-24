@@ -1,7 +1,8 @@
 export type { AccessGrant } from "./access-grant";
 export { isAccessGrant } from "./access-grant";
-export type { AuthenticatedRequestContext } from "./context";
+export type { ActorType, AuthenticatedRequestContext } from "./context";
 export {
+  ActorTypeSchema,
   AuthenticatedRequestContextSchema,
   parseAuthenticatedRequestContext,
 } from "./context";
@@ -40,6 +41,7 @@ export type {
   AuthorizationPort,
   ClockPort,
   InternalErrorReporterPort,
+  PreAuthenticationRateLimitPort,
   ProtectedOperationPorts,
   QuotaDecision,
   QuotaPort,

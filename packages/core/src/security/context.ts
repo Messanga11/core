@@ -7,7 +7,13 @@ import {
   TenantIdSchema,
 } from "./identifiers";
 
-const ActorSchema = z.object({ id: ActorIdSchema }).strict();
+export const ActorTypeSchema = z.enum(["human", "service"]);
+
+const ActorSchema = z
+  .object({ id: ActorIdSchema, type: ActorTypeSchema })
+  .strict();
+
+export type ActorType = z.infer<typeof ActorTypeSchema>;
 
 export const AuthenticatedRequestContextSchema = z
   .object({

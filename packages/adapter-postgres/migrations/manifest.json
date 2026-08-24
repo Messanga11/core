@@ -1,0 +1,7 @@
+[
+  {
+    "version": 1,
+    "name": "tenancy-foundation",
+    "file": "001_tenancy_foundation.sql"
+  }
+]

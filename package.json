@@ -11,14 +11,16 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "check": "biome check . && eslint .",
+    "check": "biome check . && eslint . && node scripts/check-boundaries.mjs",
     "check:packages": "npm run check:package --workspaces --if-present",
+    "check:fixtures": "node scripts/verify-fixture-tarballs.mjs",
+    "check:tarballs": "node scripts/verify-package-tarballs.mjs",
     "check:write": "biome check --write . && eslint . --fix",
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "npm run test:coverage --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "version": "changeset version",
-    "release": "npm run build && npm run check:packages && changeset publish"
+    "release": "npm run build && npm run check:packages && npm run check:tarballs && npm run check:fixtures && changeset publish"
   },
   "engines": {
     "node": ">=22"

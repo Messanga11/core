@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Messanga11 Core Fixture",
+    "slug": "messanga11-core-fixture",
+    "scheme": "messanga11-core",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": { "typedRoutes": true },
+    "android": { "package": "com.messanga11.corefixture" },
+    "ios": { "bundleIdentifier": "com.messanga11.corefixture" }
+  }
+}

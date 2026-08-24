@@ -1,0 +1,24 @@
+{
+  "name": "@messanga11/project-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.thresholds.lines=85 --coverage.thresholds.statements=85",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@messanga11/core": "^0.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}

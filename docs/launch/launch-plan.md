@@ -8,7 +8,7 @@ Le lancement concerne la bibliothèque npm, pas une application déployée. Aucu
 
 ### Produit
 
-- Les cinq sous-chemins correspondent au périmètre PRD.
+- Les sept sous-chemins du kernel correspondent au périmètre PRD.
 - Un domaine pilote démontre contrats, protection serveur et état optimistic.
 - Les non-objectifs restent absents du package.
 - Les exemples utilisent exclusivement l'API publique.

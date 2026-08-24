@@ -16,7 +16,7 @@ Pour une application web BFF, le consommateur doit conserver ses tokens serveur-
 
 Le vocabulaire canonique est `tenant`. `AuthorizationPort` vérifie l'adhésion active entre acteur et tenant ; `ResourceScopePort` vérifie séparément la ressource. Toute ressource cliente persistée possède un `tenantId` non nul. L'identifiant fourni par l'appelant ne remplace jamais l'appartenance vérifiée.
 
-Le kernel ne gère pas encore le cycle de vie des invitations. Si un domaine l'ajoute, les invitations doivent être aléatoires, stockées sous forme de hash, à usage unique, expirables et limitées aux permissions que l'invitant peut déléguer. Le dernier propriétaire d'un tenant ne peut être retiré et le transfert/suppression exige une opération dédiée auditée.
+Le cycle de vie des invitations vit dans `@messanga11/tenancy`, pas dans le kernel. Les invitations sont aléatoires, stockées sous forme de hash, à usage unique, expirables et limitées aux permissions que l'invitant peut déléguer. Le dernier propriétaire d'un tenant ne peut être retiré et le transfert exige une opération dédiée auditée.
 
 ## Permissions, rôles et politiques contextuelles
 

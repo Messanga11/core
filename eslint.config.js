@@ -19,8 +19,10 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["packages/core/src/**/*.ts"],
+    files: ["packages/*/src/**/*.ts"],
     rules: {
+      "no-console": "error",
+      "no-eval": "error",
       "no-restricted-imports": [
         "error",
         {
