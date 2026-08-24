@@ -14,12 +14,12 @@ const FORBIDDEN_PLATFORM_IMPORTS = [
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: ["**/dist/**", "**/node_modules/**", "**/.expo/**", "**/.next/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.ts"],
+    files: ["packages/core/src/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -36,7 +36,11 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/index.ts", "src/contracts/**/*.ts", "src/state/**/*.ts"],
+    files: [
+      "packages/core/src/index.ts",
+      "packages/core/src/contracts/**/*.ts",
+      "packages/core/src/state/**/*.ts",
+    ],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -65,9 +69,9 @@ export default tseslint.config(
   },
   {
     files: [
-      "src/security/**/*.ts",
-      "src/server/**/*.ts",
-      "src/server-entry.ts",
+      "packages/core/src/security/**/*.ts",
+      "packages/core/src/server/**/*.ts",
+      "packages/core/src/server-entry.ts",
     ],
     rules: {
       "no-restricted-imports": [
@@ -94,8 +98,8 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/trpc/**/*.ts"],
-    ignores: ["src/trpc/**/*.test.ts"],
+    files: ["packages/core/src/trpc/**/*.ts"],
+    ignores: ["packages/core/src/trpc/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",

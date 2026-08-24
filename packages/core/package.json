@@ -1,0 +1,101 @@
+{
+  "name": "@messanga11/core",
+  "version": "0.2.0",
+  "description": "Cross-platform business logic core for Messanga11 applications.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Messanga11/core.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/Messanga11/core#readme",
+  "bugs": {
+    "url": "https://github.com/Messanga11/core/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "require": {
+        "types": "./dist/server.d.cts",
+        "default": "./dist/server.cjs"
+      }
+    },
+    "./state": {
+      "import": {
+        "types": "./dist/state.d.ts",
+        "default": "./dist/state.js"
+      },
+      "require": {
+        "types": "./dist/state.d.cts",
+        "default": "./dist/state.cjs"
+      }
+    },
+    "./testing": {
+      "import": {
+        "types": "./dist/testing.d.ts",
+        "default": "./dist/testing.js"
+      },
+      "require": {
+        "types": "./dist/testing.d.cts",
+        "default": "./dist/testing.cjs"
+      }
+    },
+    "./trpc": {
+      "import": {
+        "types": "./dist/trpc.d.ts",
+        "default": "./dist/trpc.js"
+      },
+      "require": {
+        "types": "./dist/trpc.d.cts",
+        "default": "./dist/trpc.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "check": "biome check . && eslint .",
+    "check:package": "npm run build && publint --strict && attw --pack . --no-definitely-typed --profile node16",
+    "check:write": "biome check --write . && eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@trpc/server": "^11.18.0"
+  },
+  "peerDependenciesMeta": {
+    "@trpc/server": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}
