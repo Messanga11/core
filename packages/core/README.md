@@ -6,6 +6,18 @@ The npm identifier is lowercase because npm package names cannot contain upperca
 
 ## Installation
 
+Depuis une GitHub Release publique, sans token :
+
+```sh
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.2.0/messanga11-core-0.2.0.tgz
+```
+
+Voir le [guide de démarrage depuis GitHub](../../docs/getting-started-from-github.md)
+pour créer un projet TypeScript, exécuter une première opération protégée et
+brancher tRPC.
+
+Une fois une version publiée sur npm, l'installation équivalente sera :
+
 ```sh
 npm install @messanga11/core zod
 ```
@@ -95,4 +107,6 @@ npm run test:coverage
 npm run check:package
 ```
 
-The implementation is operational locally and in CI. Publishing remains intentionally gated until the npm Trusted Publisher, protected `npm` GitHub environment, and release approval are configured.
+The implementation is operational locally and in CI. Public GitHub Release
+tarballs require no consumer token. Publishing to npm remains intentionally
+gated until the npm Trusted Publisher and release approval are configured.

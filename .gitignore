@@ -4,5 +4,6 @@ node_modules/
 .next/
 .expo/
 *.tsbuildinfo
+release-assets/
 *.log
 .DS_Store
