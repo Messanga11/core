@@ -1,4 +1,4 @@
-name: Release npm packages
+name: Release core tarball
 
 on:
   release:
@@ -6,17 +6,17 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
-  group: npm-release
+  group: github-release-${{ github.event.release.tag_name }}
   cancel-in-progress: false
 
 jobs:
-  publish:
+  release-core:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: npm
+    permissions:
+      contents: write
     services:
       postgres:
         image: postgres:18
@@ -51,7 +51,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
           cache: npm
 
       - name: Install dependencies
@@ -60,17 +59,10 @@ jobs:
       - name: Verify release candidate
         run: npm run check && npm run build && npm run typecheck && npm run test:coverage && npm run check:packages && npm run check:tarballs && npm run check:fixtures
 
-      - name: Generate CycloneDX SBOM
-        run: npm sbom --all-workspaces --sbom-format cyclonedx > sbom.cdx.json
+      - name: Build core release assets
+        run: npm run pack:github-release -- release-assets "${{ github.event.release.tag_name }}"
 
-      - name: Upload SBOM
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: sbom-cyclonedx
-          path: sbom.cdx.json
-          if-no-files-found: error
-
-      - name: Publish changed packages with provenance
-        run: npm run release
+      - name: Attach core tarball, SBOM and checksums
+        run: gh release upload "${{ github.event.release.tag_name }}" release-assets/* --clobber
         env:
-          NPM_CONFIG_PROVENANCE: "true"
+          GH_TOKEN: ${{ github.token }}
