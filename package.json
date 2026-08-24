@@ -17,9 +17,54 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "require": {
+        "types": "./dist/server.d.cts",
+        "default": "./dist/server.cjs"
+      }
+    },
+    "./state": {
+      "import": {
+        "types": "./dist/state.d.ts",
+        "default": "./dist/state.js"
+      },
+      "require": {
+        "types": "./dist/state.d.cts",
+        "default": "./dist/state.cjs"
+      }
+    },
+    "./testing": {
+      "import": {
+        "types": "./dist/testing.d.ts",
+        "default": "./dist/testing.js"
+      },
+      "require": {
+        "types": "./dist/testing.d.cts",
+        "default": "./dist/testing.cjs"
+      }
+    },
+    "./trpc": {
+      "import": {
+        "types": "./dist/trpc.d.ts",
+        "default": "./dist/trpc.js"
+      },
+      "require": {
+        "types": "./dist/trpc.d.cts",
+        "default": "./dist/trpc.cjs"
+      }
     }
   },
   "files": [
@@ -28,24 +73,44 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
-    "check": "biome check .",
-    "check:write": "biome check --write .",
+    "check": "biome check . && eslint .",
+    "check:package": "npm run build && publint --strict && attw --pack . --no-definitely-typed --profile node16",
+    "check:write": "biome check --write . && eslint . --fix",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "@trpc/server": "^11.18.0"
+  },
+  "peerDependenciesMeta": {
+    "@trpc/server": {
+      "optional": true
+    }
   },
   "overrides": {
     "esbuild": "^0.28.2"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@biomejs/biome": "^2.5.10",
+    "@eslint/js": "^10.0.1",
+    "@trpc/server": "^11.18.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.0",
+    "publint": "^0.3.24",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }

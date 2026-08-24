@@ -89,3 +89,38 @@ Chaque point ci-dessous est extrait du transcript officiel et doit être appliqu
 3. **Poser les questions de clarification**.
 4. **Proposer le contrat tRPC, l'objet `uiMeta` et le composant UI Custom sélectionné**.
 5. **Attendre la confirmation de l'utilisateur avant d'implémenter**.
+
+---
+
+## ANNEXE EXÉCUTABLE : FRONTIÈRES ET DEFINITION OF DONE
+
+Ces règles s'appliquent à toute implémentation du kernel headless :
+
+### Sous-chemins et frontières d'import
+
+- `@messanga11/core` expose uniquement les contrats universels et Zod 4.
+- `@messanga11/core/state` peut importer le root, jamais `server`, `trpc` ou `testing`.
+- `@messanga11/core/server` peut importer le root, jamais `trpc`, `state` ou `testing`.
+- `@messanga11/core/trpc` est l'unique adaptateur autorisé à importer `@trpc/server` 11 ; tRPC reste un peer optionnel.
+- `@messanga11/core/testing` peut importer root, server et state ; aucun module de production ne peut importer testing.
+- Aucun module n'importe React, DOM, React Native, un ORM, un SDK d'identité, un design system ou une technologie fournisseur.
+- Un module vertical dépend d'un port stable appartenant au projet ; seul un adaptateur privé dépend d'un fournisseur. Aucun type fournisseur ne paraît dans une API publique.
+- Les exports sont explicites, sans wildcard. Les imports directs depuis `src`, `dist` ou un fichier interne sont interdits.
+
+### Autorisation fail-closed
+
+- L'ordre obligatoire est : contexte authentifié avec tenant, permission, appartenance de ressource, validation Zod, réservation de quota, rate limit, audit d'intention pour une mutation, puis handler.
+- Une erreur, exception, timeout, valeur inconnue ou dépendance absente refuse l'accès et arrête les étapes suivantes.
+- Seul le module server crée la preuve d'accès opaque. Tout service sensible la vérifie avant un effet.
+- Le tenant autorisé vient du contexte vérifié, jamais d'un identifiant fourni par l'appelant.
+- `uiMeta` est calculé depuis la même décision de permission ; la visibilité UI n'autorise jamais une action.
+
+### Definition of Done
+
+- Le changement possède des critères d'acceptation et des tests de succès, refus, erreur et récupération.
+- Biome, ESLint, frontières, TypeScript strict, tests, couverture, build et contrôles du tarball passent sans bypass.
+- Les décisions de sécurité ont 100 % de couverture de branches et incluent les tests négatifs tenant/permission pertinents.
+- Chaque sous-chemin modifié passe un smoke test depuis le tarball ; ESM, CJS et déclarations restent cohérents.
+- Aucun secret, PII, deep import, type fournisseur ou effet d'import n'est introduit.
+- Tout changement d'API publique a une décision SemVer, une note de migration et une revue.
+- La documentation durable et la stratégie de rollback sont mises à jour avant merge.
