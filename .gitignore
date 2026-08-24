@@ -1,5 +1,8 @@
 dist/
 coverage/
 node_modules/
+.next/
+.expo/
+*.tsbuildinfo
 *.log
 .DS_Store

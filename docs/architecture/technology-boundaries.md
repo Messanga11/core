@@ -25,6 +25,7 @@ La direction est toujours `module → port stable du projet → adaptateur priv�
 
 - `root` n'importe que ses modules internes universels.
 - `state` peut importer `root`, jamais `server`, `trpc` ou `testing`.
+- `policy` et `events` peuvent importer les contrats universels, jamais un adaptateur ou une plateforme.
 - `server` peut importer `root`, jamais `trpc`, `state` ou `testing`.
 - `trpc` peut importer `root`, `server` et `@trpc/server` 11.
 - `testing` peut importer `root`, `server` et `state`; aucune source de production ne l'importe.
@@ -35,7 +36,7 @@ Ces règles doivent être contrôlées par lint, analyse de dépendances et smok
 
 ## Politique d'exports
 
-Chaque sous-chemin possède une entrée et des déclarations distinctes. Le root ne ré-exporte ni `/server`, ni `/trpc`, ni `/testing`. Le package déclare les exports autorisés sans wildcard. Un import d'un chemin interne doit échouer dans une fixture consommateur.
+Chaque sous-chemin possède une entrée et des déclarations distinctes. Le root ne ré-exporte ni `/policy`, ni `/events`, ni `/server`, ni `/trpc`, ni `/testing`. Le package déclare les exports autorisés sans wildcard. Un import d'un chemin interne doit échouer dans une fixture consommateur.
 
 Le peer tRPC est optionnel au niveau du package, mais obligatoire et contrôlé lors de l'import de `/trpc`. Une application qui n'utilise que le root, `/state` ou `/server` doit pouvoir installer et exécuter le package sans tRPC.
 

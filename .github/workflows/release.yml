@@ -1,4 +1,4 @@
-name: Release npm package
+name: Release npm packages
 
 on:
   release:
@@ -15,8 +15,34 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment: npm
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: messanga11_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d messanga11_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_INTEGRATION_URL: postgresql://postgres@127.0.0.1:5432/messanga11_test
+      REDIS_INTEGRATION_URL: redis://127.0.0.1:6379
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,7 +58,19 @@ jobs:
         run: npm ci
 
       - name: Verify release candidate
-        run: npm run check && npm run typecheck && npm run test:coverage && npm run check:package
+        run: npm run check && npm run typecheck && npm run test:coverage && npm run build && npm run check:packages && npm run check:tarballs && npm run check:fixtures
 
-      - name: Publish with provenance
-        run: npm publish --access public --provenance
+      - name: Generate CycloneDX SBOM
+        run: npm sbom --all-workspaces --sbom-format cyclonedx > sbom.cdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+          if-no-files-found: error
+
+      - name: Publish changed packages with provenance
+        run: npm run release
+        env:
+          NPM_CONFIG_PROVENANCE: "true"

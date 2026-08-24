@@ -13,11 +13,13 @@
 
 ## État actuel et résultat cible
 
-L'état actuel est une fondation publiable : contrats, schémas Zod, pipeline protégé, intégration tRPC, état optimiste, fakes, packaging et CI sont opérationnels. Le premier domaine métier et les adaptateurs d'infrastructure réels restent la responsabilité des applications consommatrices.
+L'état actuel est un écosystème publiable : contrats, policy, événements, schémas Zod, pipeline protégé, intégration tRPC, état optimiste, fakes, packaging et CI sont opérationnels. Un domaine pilote et des adaptateurs PostgreSQL, Redis, OIDC et OpenTelemetry valident les ports sans rendre le kernel dépendant d'un fournisseur.
 
-Le résultat cible est une bibliothèque isolée avec cinq sous-chemins :
+Le résultat cible est une bibliothèque isolée avec sept sous-chemins :
 
 - `@messanga11/core` : contrats universels sérialisables ;
+- `@messanga11/core/policy` : décision unique utilisée par le serveur et `uiMeta` ;
+- `@messanga11/core/events` : enveloppes et ports transactionnels ;
 - `@messanga11/core/server` : ports serveur, contexte protégé et politiques ;
 - `@messanga11/core/trpc` : adaptateur tRPC 11 optionnel ;
 - `@messanga11/core/state` : transitions et mises à jour optimistes headless ;
@@ -34,7 +36,7 @@ La proposition de valeur est un contrat unique, testable et indépendant des tec
 **Objectif :** fournir un kernel stable que deux shells différents peuvent intégrer sans dupliquer les décisions métier.
 
 - KR1 : 100 % des chemins serveur sensibles testés refusent l'accès sans session, tenant, permission ou preuve valide.
-- KR2 : les cinq sous-chemins passent des smoke tests d'import indépendants ; aucun bundle universel ou state ne charge tRPC ou un module serveur.
+- KR2 : les sept sous-chemins passent des smoke tests d'import indépendants ; aucun bundle universel ou state ne charge tRPC ou un module serveur.
 - KR3 : une application pilote consomme les contrats, la procédure protégée et l'état optimiste sans importer de type fournisseur dans son domaine.
 - KR4 : 100 % des changements d'API publique sont détectés avant publication et accompagnés d'une décision SemVer.
 - KR5 : la release candidate s'installe et typechecke depuis le tarball dans deux fixtures de consommation indépendantes.

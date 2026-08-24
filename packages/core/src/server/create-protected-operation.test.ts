@@ -88,7 +88,7 @@ function createHarness(): TestHarness {
 
 function validContext(withResource = false): unknown {
   return {
-    actor: { id: "actor-1" },
+    actor: { id: "actor-1", type: "human" },
     requestId: "request-1",
     ...(withResource
       ? { resource: { id: "resource-1", type: "document" } }

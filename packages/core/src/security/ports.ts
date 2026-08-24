@@ -51,6 +51,13 @@ export interface RateLimitPort {
   }): Promise<RateLimitDecision>;
 }
 
+export interface PreAuthenticationRateLimitPort {
+  consume(options: {
+    readonly key: string;
+    readonly operation: OperationName;
+  }): Promise<RateLimitDecision>;
+}
+
 export type AuditPhase = "intent" | "result";
 export type AuditOutcome = "attempted" | "succeeded" | "failed";
 

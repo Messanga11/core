@@ -1,0 +1,31 @@
+{
+  "name": "@messanga11/expo-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "build": "expo export --platform android --output-dir dist",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.thresholds.lines=80 --coverage.thresholds.statements=80",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@messanga11/core": "^0.2.0",
+    "@trpc/client": "^11.18.0",
+    "expo": "~57.0.16",
+    "expo-haptics": "~57.0.1",
+    "expo-linking": "~57.0.7",
+    "expo-router": "~57.0.16",
+    "expo-secure-store": "~57.0.1",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
+  },
+  "devDependencies": {
+    "@messanga11/next-fixture": "0.0.0",
+    "@types/react": "^19.2.14",
+    "vitest": "^4.1.11"
+  }
+}
