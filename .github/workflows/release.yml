@@ -58,7 +58,7 @@ jobs:
         run: npm ci
 
       - name: Verify release candidate
-        run: npm run check && npm run typecheck && npm run test:coverage && npm run build && npm run check:packages && npm run check:tarballs && npm run check:fixtures
+        run: npm run check && npm run build && npm run typecheck && npm run test:coverage && npm run check:packages && npm run check:tarballs && npm run check:fixtures
 
       - name: Generate CycloneDX SBOM
         run: npm sbom --all-workspaces --sbom-format cyclonedx > sbom.cdx.json

@@ -10,7 +10,7 @@
     "fixtures/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @messanga11/core && npm run build -w @messanga11/tenancy && npm run build -w @messanga11/auth-oidc && npm run build -w @messanga11/adapter-redis && npm run build -w @messanga11/telemetry && npm run build -w @messanga11/adapter-postgres && npm run build -w @messanga11/project-fixture && npm run build -w @messanga11/next-fixture && npm run build -w @messanga11/expo-fixture",
     "check": "biome check . && eslint . && node scripts/check-boundaries.mjs",
     "check:packages": "npm run check:package --workspaces --if-present",
     "check:fixtures": "node scripts/verify-fixture-tarballs.mjs",
