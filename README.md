@@ -1,98 +1,31 @@
-# @Messanga11/core
+# Messanga11 Core Ecosystem
 
-Headless, cross-platform business kernel for Messanga11 applications. It centralizes serializable UI contracts, optimistic state, input validation, tenant-aware authorization, quotas, rate limits, audit events, safe errors, and tRPC integration without importing React, DOM, React Native, an ORM, or a UI vendor.
+Provider-agnostic TypeScript packages for protected multi-tenant business operations, reference infrastructure adapters, and cross-platform integration fixtures.
 
-The npm identifier is lowercase because npm package names cannot contain uppercase letters.
+The public kernel lives in `packages/core`. Concrete PostgreSQL, Redis, OIDC, and telemetry integrations are isolated in dedicated packages. Web and native renderers remain private fixtures.
 
-## Installation
-
-```sh
-npm install @messanga11/core zod
-```
-
-Install the optional peer only when using the tRPC adapter:
-
-```sh
-npm install @trpc/server
-```
-
-## Public entry points
-
-| Entry point | Responsibility |
+| Package | Responsibility |
 | --- | --- |
-| `@messanga11/core` | Serializable `uiMeta`, operation envelopes, public errors, and UI runtime contracts |
-| `@messanga11/core/state` | Exhaustive query/command states and optimistic state reducer |
-| `@messanga11/core/server` | Zod identifiers, request context, ports, access grants, and protected operations |
-| `@messanga11/core/trpc` | Guarded tRPC query/mutation factory with safe error mapping |
-| `@messanga11/core/testing` | Deterministic contexts and in-memory ports for tests only |
+| `@messanga11/core` | JSON contracts, policy, protected operations, state and tRPC |
+| `@messanga11/tenancy` | Tenant, membership, invitation and ownership rules |
+| `@messanga11/auth-oidc` | Strict OIDC/JWKS verification and session ports |
+| `@messanga11/adapter-postgres` | PostgreSQL 18 migrations, RLS, outbox and tenancy unit of work |
+| `@messanga11/adapter-redis` | Redis 8 Functions for rate limits, quotas and idempotency |
+| `@messanga11/telemetry` | Redacted OpenTelemetry bridges |
 
-## Protected execution
-
-Every protected operation follows the same fail-closed path:
-
-```text
-authenticated context
-  → required permission
-  → resource scope
-  → Zod input validation
-  → quota reservation
-  → rate limit
-  → mutation intent audit
-  → handler with opaque AccessGrant
-  → quota commit/release
-  → result audit
-```
-
-Ports are injected by the host application. The package never imports a database, identity provider, cache, queue, or telemetry vendor.
-
-```ts
-import { z } from "zod";
-import { createProtectedOperation } from "@messanga11/core/server";
-import {
-  createTestContext,
-  createTestPorts,
-} from "@messanga11/core/testing";
-
-const { ports } = createTestPorts();
-const readProfile = createProtectedOperation({
-  name: "profile.read",
-  kind: "query",
-  permission: "profile.read",
-  schema: z.object({ profileId: z.string().min(1) }).strict(),
-  ports,
-  handler: async ({ profileId }, { access }) => ({
-    profileId,
-    tenantId: access.tenantId,
-  }),
-});
-
-const result = await readProfile.execute({
-  context: createTestContext(),
-  input: { profileId: "profile:1" },
-});
-```
-
-`createTestPorts` is deliberately exported from `/testing`; production applications must provide atomic, distributed adapters appropriate to their infrastructure.
-
-## Documentation
-
-- [Product requirements](docs/product/okr-prd.md)
-- [Architecture](docs/architecture/design-doc.md)
-- [Technology boundaries](docs/architecture/technology-boundaries.md)
-- [Authentication and authorization](docs/security/authentication-authorization.md)
-- [Delivery process](docs/engineering/delivery-process.md)
-- [Package deployment](docs/deployment/deployment.md)
-- [Launch and incident plan](docs/launch/launch-plan.md)
-- [Security reporting](SECURITY.md)
-
-## Development
+## Validation
 
 ```sh
 npm ci
 npm run check
 npm run typecheck
 npm run test:coverage
-npm run check:package
+npm run build
+npm run check:packages
+npm run check:tarballs
+npm run check:fixtures
 ```
 
-The implementation is operational locally and in CI. Publishing remains intentionally gated until the npm Trusted Publisher, protected `npm` GitHub environment, and release approval are configured.
+The fixture verification copies the Next.js and Expo shells to an isolated temporary workspace and installs `@messanga11/core` from its packed artifact. This prevents accidental validation through workspace source links.
+
+PostgreSQL and Redis integration tests run when `POSTGRES_INTEGRATION_URL` and `REDIS_INTEGRATION_URL` are present. GitHub Actions supplies PostgreSQL 18 and Redis 8 services.

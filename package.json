@@ -1,105 +1,39 @@
 {
-  "name": "@messanga11/core",
-  "version": "0.1.0",
-  "description": "Cross-platform business logic core for Messanga11 applications.",
+  "name": "@messanga11/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Provider-agnostic business kernel and reference adapters for Messanga11 applications.",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Messanga11/core.git"
-  },
-  "homepage": "https://github.com/Messanga11/core#readme",
-  "bugs": {
-    "url": "https://github.com/Messanga11/core/issues"
-  },
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./server": {
-      "import": {
-        "types": "./dist/server.d.ts",
-        "default": "./dist/server.js"
-      },
-      "require": {
-        "types": "./dist/server.d.cts",
-        "default": "./dist/server.cjs"
-      }
-    },
-    "./state": {
-      "import": {
-        "types": "./dist/state.d.ts",
-        "default": "./dist/state.js"
-      },
-      "require": {
-        "types": "./dist/state.d.cts",
-        "default": "./dist/state.cjs"
-      }
-    },
-    "./testing": {
-      "import": {
-        "types": "./dist/testing.d.ts",
-        "default": "./dist/testing.js"
-      },
-      "require": {
-        "types": "./dist/testing.d.cts",
-        "default": "./dist/testing.cjs"
-      }
-    },
-    "./trpc": {
-      "import": {
-        "types": "./dist/trpc.d.ts",
-        "default": "./dist/trpc.js"
-      },
-      "require": {
-        "types": "./dist/trpc.d.cts",
-        "default": "./dist/trpc.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist"
+  "workspaces": [
+    "packages/*",
+    "fixtures/*"
   ],
-  "sideEffects": false,
   "scripts": {
-    "build": "tsup",
-    "check": "biome check . && eslint .",
-    "check:package": "npm run build && publint --strict && attw --pack . --no-definitely-typed --profile node16",
+    "build": "npm run build -w @messanga11/core && npm run build -w @messanga11/tenancy && npm run build -w @messanga11/auth-oidc && npm run build -w @messanga11/adapter-redis && npm run build -w @messanga11/telemetry && npm run build -w @messanga11/adapter-postgres && npm run build -w @messanga11/project-fixture && npm run build -w @messanga11/next-fixture && npm run build -w @messanga11/expo-fixture",
+    "check": "biome check . && eslint . && node scripts/check-boundaries.mjs",
+    "check:packages": "npm run check:package --workspaces --if-present",
+    "check:fixtures": "node scripts/verify-fixture-tarballs.mjs",
+    "check:tarballs": "node scripts/verify-package-tarballs.mjs",
     "check:write": "biome check --write . && eslint . --fix",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "version": "changeset version",
+    "release": "npm run build && npm run check:packages && npm run check:tarballs && npm run check:fixtures && changeset publish"
   },
   "engines": {
     "node": ">=22"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "peerDependencies": {
-    "@trpc/server": "^11.18.0"
-  },
-  "peerDependenciesMeta": {
-    "@trpc/server": {
-      "optional": true
-    }
-  },
   "overrides": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@biomejs/biome": "^2.5.10",
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.7",
     "@eslint/js": "^10.0.1",
     "@trpc/server": "^11.18.0",
     "@vitest/coverage-v8": "^4.1.11",
@@ -109,8 +43,5 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.11"
-  },
-  "dependencies": {
-    "zod": "^4.4.3"
   }
 }

@@ -4,7 +4,7 @@
 
 L'objectif est de concentrer les contrats, politiques d'accès et transitions réutilisables dans un package TypeScript qui ne connaît aucun renderer, transport concret, ORM ou fournisseur.
 
-La fondation est opérationnelle : cinq sous-chemins publics, contrats `uiMeta`, état optimiste, pipeline protégé, adaptateur tRPC et fakes de test sont compilés et testés. Restent avant 1.0 l'intégration d'un domaine pilote, la configuration du Trusted Publisher npm et la validation dans deux shells réels.
+La fondation est opérationnelle : sept sous-chemins publics, contrats `uiMeta`, policy, événements, état optimiste, pipeline protégé, adaptateur tRPC et fakes de test sont compilés et testés. Le domaine pilote et les shells Next.js/Expo valident les tarballs. Reste avant publication la configuration du Trusted Publisher npm.
 
 ## Architecture et frontières de confiance
 
@@ -30,6 +30,8 @@ Frontières de confiance : toute entrée du shell, du réseau et d'un adaptateur
 | Module public | Responsabilité complète | Interdictions |
 | --- | --- | --- |
 | root | Contrats sérialisables, résultat, erreurs, `uiMeta`, runtime UI sémantique | Node, Zod, tRPC, UI concrète, fournisseurs |
+| `/policy` | Décision deny-by-default et projection `uiMeta` | Stockage, UI concrète, fournisseur |
+| `/events` | Événements JSON-safe et ports transactionnels | Bus concret, ORM, payload PII |
 | `/server` | Ports, composition des politiques, preuve, erreurs internes, audit | Transport, ORM, fournisseur concret |
 | `/trpc` | Adaptateur tRPC 11, metadata de procédure, mapping d'erreur | Règle métier, stockage, authentification concrète |
 | `/state` | Transition pure, optimistic commit/rollback, concurrence | React, store vendor, réseau |
@@ -42,6 +44,8 @@ Les futurs modules métier sont verticaux : chacun possède contrat, schéma, po
 ```text
 root       → aucune dépendance plateforme
 state      → contrats universels
+policy     → contrats universels
+events     → contrats universels
 server     → Zod 4 + contrats universels
 trpc       → root + server + peer @trpc/server 11
 testing    → root + server + state

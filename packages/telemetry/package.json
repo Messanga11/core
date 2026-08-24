@@ -1,0 +1,43 @@
+{
+  "name": "@messanga11/telemetry",
+  "version": "0.1.0",
+  "description": "OpenTelemetry adapters with safe attribute redaction for Messanga11 operations.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "check:package": "npm run build && publint --strict && attw --pack . --no-definitely-typed --profile node16",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@messanga11/core": "^0.2.0",
+    "@opentelemetry/api": "^1.9.0"
+  }
+}
