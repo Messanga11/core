@@ -1,0 +1,51 @@
+{
+  "name": "@messanga11/core",
+  "version": "0.1.0",
+  "description": "Cross-platform business logic core for Messanga11 applications.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Messanga11/core.git"
+  },
+  "homepage": "https://github.com/Messanga11/core#readme",
+  "bugs": {
+    "url": "https://github.com/Messanga11/core/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "check": "biome check .",
+    "check:write": "biome check --write .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
