@@ -2,6 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: {
+    design: "src/design/index.ts",
     events: "src/events/index.ts",
     index: "src/index.ts",
     policy: "src/policy/index.ts",
