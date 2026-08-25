@@ -1,13 +1,8 @@
 {
-  "name": "@messanga11/adapter-redis",
+  "name": "@messanga11/formbuilder",
   "version": "0.1.0",
-  "description": "Fail-closed Redis Functions adapters for Messanga11 server applications.",
+  "description": "Renderer-driven React form runtime for Messanga11 form contracts.",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Messanga11/core.git",
-    "directory": "packages/adapter-redis"
-  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -25,16 +20,14 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
-    "check": "biome check . && eslint .",
     "check:package": "npm run build && publint --strict && attw --pack . --no-definitely-typed --profile node16",
-    "check:write": "biome check --write . && eslint . --fix",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
@@ -43,11 +36,15 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "@messanga11/core": ">=0.2.0 <0.4.0"
-  },
   "dependencies": {
-    "redis": "^6.2.1",
-    "zod": "^4.4.3"
+    "@messanga11/core": "^0.3.0",
+    "@tanstack/react-form": "^1.33.5"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.12",
+    "react": "^19.1.1"
   }
 }

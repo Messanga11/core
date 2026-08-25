@@ -9,7 +9,7 @@ The npm identifier is lowercase because npm package names cannot contain upperca
 Depuis une GitHub Release publique, sans token :
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.2.0/messanga11-core-0.2.0.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.0/messanga11-core-0.3.0.tgz
 ```
 
 Voir le [guide de démarrage depuis GitHub](../../docs/getting-started-from-github.md)
@@ -33,6 +33,8 @@ npm install @trpc/server
 | Entry point | Responsibility |
 | --- | --- |
 | `@messanga11/core` | Serializable `uiMeta`, operation envelopes, public errors, and UI runtime contracts |
+| `@messanga11/core/crud` | Provider-neutral resource, filter, sort, pagination and CRUD port contracts |
+| `@messanga11/core/forms` | JSON-safe form definitions, issues, validation and pure state transitions |
 | `@messanga11/core/state` | Exhaustive query/command states and optimistic state reducer |
 | `@messanga11/core/server` | Zod identifiers, request context, ports, access grants, and protected operations |
 | `@messanga11/core/trpc` | Guarded tRPC query/mutation factory with safe error mapping |
@@ -56,6 +58,15 @@ authenticated context
 ```
 
 Ports are injected by the host application. The package never imports a database, identity provider, cache, queue, or telemetry vendor.
+
+## Shared forms
+
+Declare steps and fields once with `@messanga11/core/forms`. Render them through
+`@messanga11/formbuilder`, which accepts an injected Web or Native renderer.
+Platform props, DOM `File` objects and network functions never enter the form
+definition. Web applications may bridge CRUD through
+`@messanga11/adapter-refine`; local development servers may use the separately
+published `@messanga11/adapter-sqlite`.
 
 ```ts
 import { z } from "zod";

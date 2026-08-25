@@ -2,11 +2,14 @@
 
 Provider-agnostic TypeScript packages for protected multi-tenant business operations, reference infrastructure adapters, and cross-platform integration fixtures.
 
-The public kernel lives in `packages/core`. Concrete PostgreSQL, Redis, OIDC, and telemetry integrations are isolated in dedicated packages. Web and native renderers remain private fixtures.
+The public kernel lives in `packages/core`. Concrete PostgreSQL, Redis, SQLite, OIDC, Refine and telemetry integrations are isolated in dedicated packages. Web and native renderers remain private fixtures.
 
 | Package | Responsibility |
 | --- | --- |
-| `@messanga11/core` | JSON contracts, policy, protected operations, state and tRPC |
+| `@messanga11/core` | JSON contracts, forms, CRUD, policy, protected operations, state and tRPC |
+| `@messanga11/formbuilder` | Renderer-driven TanStack Form runtime for shared feature definitions |
+| `@messanga11/adapter-refine` | Refine.dev 5 `DataProvider` bridge to the provider-neutral CRUD port |
+| `@messanga11/adapter-sqlite` | Allowlisted SQLite development adapter |
 | `@messanga11/tenancy` | Tenant, membership, invitation and ownership rules |
 | `@messanga11/auth-oidc` | Strict OIDC/JWKS verification and session ports |
 | `@messanga11/adapter-postgres` | PostgreSQL 18 migrations, RLS, outbox and tenancy unit of work |
@@ -34,7 +37,7 @@ Public releases expose the validated core tarball without requiring a GitHub or
 npm token:
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.2.0/messanga11-core-0.2.0.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.0/messanga11-core-0.3.0.tgz
 ```
 
 See the [GitHub installation guide](docs/getting-started-from-github.md) for a
