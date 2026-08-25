@@ -6,7 +6,8 @@
       "!**/dist",
       "!**/node_modules",
       "!**/.expo",
-      "!**/.next"
+      "!**/.next",
+      "!**/release-assets"
     ]
   },
   "formatter": {

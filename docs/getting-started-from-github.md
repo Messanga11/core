@@ -13,7 +13,7 @@ Dans un nouveau dossier :
 ```sh
 npm init -y
 npm pkg set type=module
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.1/messanga11-core-0.3.1.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.4.0/messanga11-core-0.4.0.tgz
 npm install zod
 npm install --save-dev typescript tsx @types/node
 ```
@@ -117,7 +117,7 @@ jamais une preuve d'accès.
 Pour changer de version, remplace à la fois le tag et le nom du tarball :
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.1/messanga11-core-0.3.1.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.4.0/messanga11-core-0.4.0.tgz
 ```
 
 Le rollback utilise exactement la même commande avec la version précédente. Les

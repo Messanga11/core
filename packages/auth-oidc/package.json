@@ -54,7 +54,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@messanga11/core": ">=0.2.0 <0.4.0"
+    "@messanga11/core": ">=0.2.0 <0.5.0"
   },
   "dependencies": {
     "jose": "^6.2.10",
