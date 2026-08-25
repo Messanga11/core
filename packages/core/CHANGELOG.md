@@ -1,5 +1,14 @@
 # @messanga11/core
 
+## 0.4.0
+
+### Minor Changes
+
+- Add executable, renderer-neutral feature catalogs for declaring pages, layouts,
+  blocks, SEO, platform routes and backend operations from one TypeScript object.
+- Add a fail-closed feature operation runtime with strict schema validation,
+  permission checks, rate limiting, idempotency and mandatory mutation auditing.
+
 ## 0.3.1
 
 ### Patch Changes

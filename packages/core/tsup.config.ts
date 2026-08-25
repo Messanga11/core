@@ -5,6 +5,8 @@ export default defineConfig({
     crud: "src/crud/index.ts",
     design: "src/design/index.ts",
     events: "src/events/index.ts",
+    features: "src/features/index.ts",
+    "feature-server": "src/feature-server/index.ts",
     forms: "src/forms/index.ts",
     index: "src/index.ts",
     policy: "src/policy/index.ts",

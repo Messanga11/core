@@ -9,7 +9,7 @@ The npm identifier is lowercase because npm package names cannot contain upperca
 Depuis une GitHub Release publique, sans token :
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.1/messanga11-core-0.3.1.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.4.0/messanga11-core-0.4.0.tgz
 ```
 
 Voir le [guide de démarrage depuis GitHub](../../docs/getting-started-from-github.md)
@@ -63,6 +63,18 @@ Ports are injected by the host application. The package never imports a database
 
 Declare steps and fields once with `@messanga11/core/forms`. Render them through
 `@messanga11/formbuilder`, which accepts an injected Web or Native renderer.
+
+## Executable feature catalogs
+
+`@messanga11/core/features` defines provider-neutral feature catalogs containing
+pages, platform routes, SEO, semantic layout/block trees and backend operation
+contracts. `compileFeatureCatalog` rejects duplicate routes, unknown block/action
+references and incomplete mutation guardrails.
+
+`@messanga11/core/feature-server` executes only catalog-declared operations. It
+validates method and strict input/output schemas, then enforces access,
+idempotency, rate limiting and required audit through injected ports before calling
+an allowlisted handler. It contains no Next.js, Expo, database or identity SDK.
 Platform props, DOM `File` objects and network functions never enter the form
 definition. Web applications may bridge CRUD through
 `@messanga11/adapter-refine`; local development servers may use the separately

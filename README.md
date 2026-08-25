@@ -37,7 +37,7 @@ Public releases expose the validated core tarball without requiring a GitHub or
 npm token:
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.1/messanga11-core-0.3.1.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.4.0/messanga11-core-0.4.0.tgz
 ```
 
 See the [GitHub installation guide](docs/getting-started-from-github.md) for a

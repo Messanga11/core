@@ -37,7 +37,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@messanga11/core": ">=0.2.0 <0.4.0",
+    "@messanga11/core": ">=0.2.0 <0.5.0",
     "@opentelemetry/api": "^1.9.0"
   }
 }
