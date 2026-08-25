@@ -1,6 +1,6 @@
 {
   "name": "@messanga11/core",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Cross-platform business logic core for Messanga11 applications.",
   "license": "MIT",
   "repository": {
@@ -37,6 +37,16 @@
         "default": "./dist/design.cjs"
       }
     },
+    "./crud": {
+      "import": {
+        "types": "./dist/crud.d.ts",
+        "default": "./dist/crud.js"
+      },
+      "require": {
+        "types": "./dist/crud.d.cts",
+        "default": "./dist/crud.cjs"
+      }
+    },
     "./events": {
       "import": {
         "types": "./dist/events.d.ts",
@@ -45,6 +55,16 @@
       "require": {
         "types": "./dist/events.d.cts",
         "default": "./dist/events.cjs"
+      }
+    },
+    "./forms": {
+      "import": {
+        "types": "./dist/forms.d.ts",
+        "default": "./dist/forms.js"
+      },
+      "require": {
+        "types": "./dist/forms.d.cts",
+        "default": "./dist/forms.cjs"
       }
     },
     "./policy": {

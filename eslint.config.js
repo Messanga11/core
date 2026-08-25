@@ -121,4 +121,10 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["packages/formbuilder/src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": "off",
+    },
+  },
 );
