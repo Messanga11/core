@@ -9,7 +9,7 @@ The npm identifier is lowercase because npm package names cannot contain upperca
 Depuis une GitHub Release publique, sans token :
 
 ```sh
-npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.0/messanga11-core-0.3.0.tgz
+npm install --save-exact https://github.com/Messanga11/core/releases/download/core-v0.3.1/messanga11-core-0.3.1.tgz
 ```
 
 Voir le [guide de démarrage depuis GitHub](../../docs/getting-started-from-github.md)

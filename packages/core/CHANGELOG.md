@@ -1,5 +1,11 @@
 # @messanga11/core
 
+## 0.3.1
+
+### Patch Changes
+
+- Allow the companion GitHub release tarballs to reuse an explicitly installed Core package without requiring registry access.
+
 ## 0.3.0
 
 ### Minor Changes

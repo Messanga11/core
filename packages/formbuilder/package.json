@@ -1,6 +1,6 @@
 {
   "name": "@messanga11/formbuilder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Renderer-driven React form runtime for Messanga11 form contracts.",
   "license": "MIT",
   "type": "module",
@@ -37,10 +37,10 @@
     "access": "public"
   },
   "dependencies": {
-    "@messanga11/core": "^0.3.0",
     "@tanstack/react-form": "^1.33.5"
   },
   "peerDependencies": {
+    "@messanga11/core": "^0.3.1",
     "react": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
