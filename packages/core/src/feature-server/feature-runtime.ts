@@ -15,9 +15,11 @@ export interface FeatureRequestContext {
 
 export interface FeatureOperationInvocation {
   readonly context: FeatureRequestContext;
+  readonly featureId: string;
   readonly idempotencyKey?: string;
   readonly input: JsonValue;
   readonly operation: FeatureOperationDefinition;
+  readonly operationId: string;
 }
 
 export type FeatureOperationHandler = (
@@ -127,11 +129,13 @@ export async function executeFeatureOperation(options: {
     await audit(options, operation, "started");
     const output = await handler({
       context: options.context,
+      featureId: options.featureId,
       ...(options.idempotencyKey === undefined
         ? {}
         : { idempotencyKey: options.idempotencyKey }),
       input: validation.value,
       operation,
+      operationId: options.operationId,
     });
     const outputValidation = validateFeatureValue(operation.output, output);
     if (!outputValidation.success) throw new Error("Invalid handler output.");

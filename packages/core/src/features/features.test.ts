@@ -67,6 +67,19 @@ const feature: FeatureDefinition = {
       },
     },
   ],
+  resources: [
+    {
+      fields: {
+        id: { required: true, schema: { type: "string" } },
+        name: {
+          required: true,
+          schema: { maxLength: 120, minLength: 1, type: "string" },
+        },
+      },
+      id: "contacts",
+      seed: [{ id: "contact-1", name: "Ada" }],
+    },
+  ],
   schemaVersion: 1,
   version: "1.0.0",
 };
@@ -92,12 +105,40 @@ describe("feature catalog", () => {
     expect(compiled.pages["contact.landing"]?.root.layout).toBe(
       "marketing.stack",
     );
+    expect(compiled.resources["contact.contacts"]?.seed).toEqual([
+      { id: "contact-1", name: "Ada" },
+    ]);
     expect(Object.isFrozen(compiled)).toBe(true);
   });
 
   it.each<readonly [string, FeatureDefinition, FeatureDefinitionErrorCode]>([
     ["unknown block", { ...feature, blocks: [] }, "UNKNOWN_BLOCK"],
     ["unknown operation", { ...feature, operations: [] }, "UNKNOWN_OPERATION"],
+    [
+      "unknown resource",
+      {
+        ...feature,
+        operations: [
+          { ...operation, handler: "crud.create", resource: "missing" },
+        ],
+      },
+      "UNKNOWN_RESOURCE",
+    ],
+    [
+      "invalid resource seed",
+      {
+        ...feature,
+        resources: [
+          {
+            ...feature.resources?.[0],
+            fields: feature.resources?.[0]?.fields ?? {},
+            id: "contacts",
+            seed: [{ id: "contact-1" }],
+          },
+        ],
+      } as FeatureDefinition,
+      "INVALID_DEFINITION",
+    ],
     [
       "mutation without audit",
       {

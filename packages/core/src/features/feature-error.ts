@@ -3,7 +3,8 @@ export type FeatureDefinitionErrorCode =
   | "DUPLICATE_ROUTE"
   | "INVALID_DEFINITION"
   | "UNKNOWN_BLOCK"
-  | "UNKNOWN_OPERATION";
+  | "UNKNOWN_OPERATION"
+  | "UNKNOWN_RESOURCE";
 
 export class FeatureDefinitionError extends Error {
   readonly code: FeatureDefinitionErrorCode;
