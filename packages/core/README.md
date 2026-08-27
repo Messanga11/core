@@ -67,14 +67,18 @@ Declare steps and fields once with `@messanga11/core/forms`. Render them through
 ## Executable feature catalogs
 
 `@messanga11/core/features` defines provider-neutral feature catalogs containing
-pages, platform routes, SEO, semantic layout/block trees and backend operation
-contracts. `compileFeatureCatalog` rejects duplicate routes, unknown block/action
-references and incomplete mutation guardrails.
+pages, platform routes, SEO, semantic layout/block trees, resources and backend
+operation contracts. `createFeatureCrudOperations` derives list/get/create/update/
+delete contracts from one field declaration. `compileFeatureCatalog` rejects
+duplicate routes, unknown block/action/resource references, invalid seeds and
+incomplete mutation guardrails.
 
 `@messanga11/core/feature-server` executes only catalog-declared operations. It
 validates method and strict input/output schemas, then enforces access,
 idempotency, rate limiting and required audit through injected ports before calling
-an allowlisted handler. It contains no Next.js, Expo, database or identity SDK.
+an allowlisted handler. `createFeatureCrudHandlers` projects generated resource
+contracts onto an injected `CrudPort`; clients cannot select a table, handler or
+undeclared field. It contains no Next.js, Expo, database or identity SDK.
 Platform props, DOM `File` objects and network functions never enter the form
 definition. Web applications may bridge CRUD through
 `@messanga11/adapter-refine`; local development servers may use the separately

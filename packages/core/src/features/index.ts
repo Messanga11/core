@@ -3,6 +3,8 @@ export {
   defineFeature,
   defineFeatureCatalog,
 } from "./compile-feature-catalog";
+export type { CreateFeatureCrudOperationsOptions } from "./crud-operations";
+export { createFeatureCrudOperations } from "./crud-operations";
 export type {
   CompiledFeatureCatalog,
   CompiledFeatureRoute,
@@ -15,6 +17,8 @@ export type {
   FeatureOperationDefinition,
   FeaturePageDefinition,
   FeaturePlatformRoutes,
+  FeatureResourceDefinition,
+  FeatureResourceFieldDefinition,
   FeatureSeoDefinition,
   FeatureValueSchema,
 } from "./feature-definition";

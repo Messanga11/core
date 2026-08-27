@@ -6,10 +6,13 @@ import type {
   FeatureNode,
   FeatureOperationDefinition,
   FeaturePageDefinition,
+  FeatureResourceDefinition,
 } from "./feature-definition";
 import { FeatureDefinitionError } from "./feature-error";
+import { validateFeatureValue } from "./value-schema";
 
 const IDENTIFIER = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
+const FIELD_IDENTIFIER = /^[a-z][A-Za-z0-9]*$/;
 const VERSION = /^\d+\.\d+\.\d+$/;
 const ROUTE = /^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/;
 const PERMISSION = /^[a-z][a-z0-9]*(?:[.:][a-z0-9-]+)+$/;
@@ -43,19 +46,28 @@ export function compileFeatureCatalog(
   const featureIds = new Set<string>();
   const pageIndex: Record<string, FeaturePageDefinition> = {};
   const operationIndex: Record<string, FeatureOperationDefinition> = {};
+  const resourceIndex: Record<string, FeatureResourceDefinition> = {};
   const routes: CompiledFeatureRoute[] = [];
   const routeKeys = new Set<string>();
 
   for (const feature of definition.features) {
     validateFeature(feature, `features.${feature.id || "unknown"}`);
     assertUnique(featureIds, feature.id, `features.${feature.id}`);
-    indexFeature(feature, pageIndex, operationIndex, routes, routeKeys);
+    indexFeature(
+      feature,
+      pageIndex,
+      operationIndex,
+      resourceIndex,
+      routes,
+      routeKeys,
+    );
   }
 
   return deepFreeze({
     definition,
     operations: operationIndex,
     pages: pageIndex,
+    resources: resourceIndex,
     routes,
   });
 }
@@ -68,6 +80,7 @@ function validateFeature(feature: FeatureDefinition, path: string): void {
   const blockNames = new Set<string>();
   const operationIds = new Set<string>();
   const pageIds = new Set<string>();
+  const resourceIds = new Set<string>();
   for (const block of feature.blocks) {
     assertIdentifier(block, `${path}.blocks`);
     assertUnique(blockNames, block, `${path}.blocks.${block}`);
@@ -83,6 +96,19 @@ function validateFeature(feature: FeatureDefinition, path: string): void {
       `${path}.operations.${operation.id}`,
     );
   }
+  for (const resource of feature.resources ?? []) {
+    validateResource(resource, `${path}.resources.${resource.id || "unknown"}`);
+    assertUnique(resourceIds, resource.id, `${path}.resources.${resource.id}`);
+  }
+  for (const operation of feature.operations) {
+    if (
+      operation.handler.startsWith("crud.") &&
+      operation.resource &&
+      !resourceIds.has(operation.resource)
+    ) {
+      fail("UNKNOWN_RESOURCE", `${path}.operations.${operation.id}.resource`);
+    }
+  }
   for (const page of feature.pages) {
     validatePage(page, `${path}.pages.${page.id || "unknown"}`);
     assertUnique(pageIds, page.id, `${path}.pages.${page.id}`);
@@ -92,6 +118,37 @@ function validateFeature(feature: FeatureDefinition, path: string): void {
       operationIds,
       `${path}.pages.${page.id}.root`,
     );
+  }
+}
+
+function validateResource(
+  resource: FeatureResourceDefinition,
+  path: string,
+): void {
+  assertIdentifier(resource.id, `${path}.id`);
+  const fields = Object.entries(resource.fields);
+  if (fields.length === 0) fail("INVALID_DEFINITION", `${path}.fields`);
+  for (const [name] of fields) {
+    if (!FIELD_IDENTIFIER.test(name))
+      fail("INVALID_DEFINITION", `${path}.fields.${name}`);
+  }
+  if (resource.fields.id?.schema.type !== "string") {
+    fail("INVALID_DEFINITION", `${path}.fields.id`);
+  }
+  const recordSchema = {
+    additionalProperties: false,
+    properties: Object.fromEntries(
+      fields.map(([name, field]) => [name, field.schema]),
+    ),
+    required: fields
+      .filter(([, field]) => field.required)
+      .map(([name]) => name),
+    type: "object",
+  } as const;
+  for (const [index, record] of (resource.seed ?? []).entries()) {
+    if (!validateFeatureValue(recordSchema, record).success) {
+      fail("INVALID_DEFINITION", `${path}.seed.${index}`);
+    }
   }
 }
 
@@ -203,9 +260,13 @@ function indexFeature(
   feature: FeatureDefinition,
   pages: Record<string, FeaturePageDefinition>,
   operations: Record<string, FeatureOperationDefinition>,
+  resources: Record<string, FeatureResourceDefinition>,
   routes: CompiledFeatureRoute[],
   routeKeys: Set<string>,
 ): void {
+  for (const resource of feature.resources ?? []) {
+    resources[`${feature.id}.${resource.id}`] = resource;
+  }
   for (const operation of feature.operations)
     operations[`${feature.id}.${operation.id}`] = operation;
   for (const page of feature.pages) {

@@ -92,11 +92,25 @@ export interface FeatureOperationDefinition {
   readonly resource?: string;
 }
 
+export interface FeatureResourceFieldDefinition {
+  readonly create?: boolean;
+  readonly required: boolean;
+  readonly schema: FeatureValueSchema;
+  readonly update?: boolean;
+}
+
+export interface FeatureResourceDefinition {
+  readonly fields: Readonly<Record<string, FeatureResourceFieldDefinition>>;
+  readonly id: string;
+  readonly seed?: readonly Readonly<Record<string, JsonValue>>[];
+}
+
 export interface FeatureDefinition {
   readonly blocks: readonly string[];
   readonly id: string;
   readonly operations: readonly FeatureOperationDefinition[];
   readonly pages: readonly FeaturePageDefinition[];
+  readonly resources?: readonly FeatureResourceDefinition[];
   readonly schemaVersion: number;
   readonly version: string;
 }
@@ -125,5 +139,6 @@ export interface CompiledFeatureCatalog {
   readonly definition: FeatureCatalogDefinition;
   readonly operations: Readonly<Record<string, FeatureOperationDefinition>>;
   readonly pages: Readonly<Record<string, FeaturePageDefinition>>;
+  readonly resources: Readonly<Record<string, FeatureResourceDefinition>>;
   readonly routes: readonly CompiledFeatureRoute[];
 }

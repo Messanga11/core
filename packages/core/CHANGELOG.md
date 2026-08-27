@@ -1,5 +1,14 @@
 # @messanga11/core
 
+## 0.5.0
+
+### Minor Changes
+
+- Generate protected CRUD operation contracts from declarative feature resources.
+
+  Add a generic SQLite feature-resource adapter with allowlisted JSON fields,
+  development seeds, pagination, filtering, sorting and persistent idempotency.
+
 ## 0.4.0
 
 ### Minor Changes
