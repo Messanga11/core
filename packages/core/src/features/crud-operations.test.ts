@@ -158,6 +158,71 @@ describe("generated feature CRUD operations", () => {
       }).success,
     ).toBe(true);
   });
+
+  it("requires a version for concurrent resources and hides private fields", () => {
+    const concurrent = createFeatureCrudOperations({
+      auditPrefix: "document",
+      readAccess: { mode: "authenticated", permissions: ["document:read"] },
+      resource: {
+        concurrency: { field: "version", mode: "version" },
+        fields: {
+          id: { required: true, schema: { type: "string" } },
+          secret: {
+            exposure: "private",
+            required: false,
+            schema: { type: "string" },
+          },
+          title: { required: true, schema: { type: "string" } },
+          version: {
+            create: false,
+            required: true,
+            schema: { minimum: 1, type: "integer" },
+            update: false,
+          },
+        },
+        id: "documents",
+      },
+      writeAccess: {
+        mode: "authenticated",
+        permissions: ["document:write"],
+      },
+    });
+    const update = concurrent.find((candidate) => candidate.id === "update");
+    const remove = concurrent.find((candidate) => candidate.id === "delete");
+    const get = concurrent.find((candidate) => candidate.id === "get");
+    if (!update || !remove || !get) throw new Error("Missing CRUD operation");
+
+    expect(
+      validateFeatureValue(update.input, {
+        expectedVersion: 2,
+        id: "document-1",
+        values: { title: "Revised" },
+      }).success,
+    ).toBe(true);
+    expect(
+      validateFeatureValue(update.input, {
+        id: "document-1",
+        values: { title: "Revised" },
+      }).success,
+    ).toBe(false);
+    expect(
+      validateFeatureValue(remove.input, {
+        expectedVersion: 2,
+        id: "document-1",
+      }).success,
+    ).toBe(true);
+    expect(
+      validateFeatureValue(get.output, {
+        found: true,
+        record: {
+          id: "document-1",
+          secret: "must-not-leak",
+          title: "Draft",
+          version: 1,
+        },
+      }).success,
+    ).toBe(false);
+  });
 });
 
 function operation(id: "create" | "delete" | "get" | "list" | "update") {

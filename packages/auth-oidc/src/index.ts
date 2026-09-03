@@ -41,9 +41,12 @@ export type SessionTokenDigest = string & {
 };
 
 export interface SessionRecord {
+  readonly createdAt: string;
   readonly expiresAt: string;
   readonly identity: NormalizedOidcIdentity;
+  readonly idleExpiresAt: string;
   readonly sessionId: SessionId;
+  readonly tenantId: string;
 }
 
 export interface SessionStorePort {
@@ -51,8 +54,14 @@ export interface SessionStorePort {
     readonly record: SessionRecord;
     readonly tokenDigest: SessionTokenDigest;
   }): Promise<void>;
-  resolve(tokenDigest: SessionTokenDigest): Promise<SessionRecord | undefined>;
-  revoke(sessionId: SessionId): Promise<void>;
+  resolve(options: {
+    readonly tenantId: string;
+    readonly tokenDigest: SessionTokenDigest;
+  }): Promise<SessionRecord | undefined>;
+  revoke(options: {
+    readonly sessionId: SessionId;
+    readonly tenantId: string;
+  }): Promise<void>;
 }
 
 export function normalizeOidcIdentity(value: unknown): NormalizedOidcIdentity {

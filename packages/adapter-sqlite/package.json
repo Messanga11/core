@@ -1,6 +1,6 @@
 {
   "name": "@messanga11/adapter-sqlite",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Development SQLite CRUD adapter for Messanga11 applications.",
   "license": "MIT",
   "type": "module",
@@ -40,7 +40,7 @@
     "better-sqlite3": "^13.0.3"
   },
   "peerDependencies": {
-    "@messanga11/core": ">=0.5.0"
+    "@messanga11/core": ">=0.6.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13"

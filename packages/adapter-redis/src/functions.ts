@@ -54,4 +54,15 @@ redis.register_function('m11_idempotency_release_v1', function(keys, args)
   if redis.call('GET', keys[1]) ~= 'pending:' .. args[1] then return 0 end
   redis.call('DEL', keys[1])
   return 1
+end)
+
+redis.register_function('m11_auth_transaction_save_v1', function(keys, args)
+  if not redis.call('SET', keys[1], args[1], 'PX', tonumber(args[2]), 'NX') then return 0 end
+  return 1
+end)
+
+redis.register_function('m11_auth_transaction_consume_v1', function(keys, args)
+  local value = redis.call('GETDEL', keys[1])
+  if not value then return false end
+  return value
 end)`;

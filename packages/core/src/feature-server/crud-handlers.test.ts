@@ -78,7 +78,7 @@ describe("feature CRUD handlers", () => {
     await expect(
       handlers["crud.update"]?.(
         invocation(
-          { id: "order-2", values: { status: "paid" } },
+          { expectedVersion: 2, id: "order-2", values: { status: "paid" } },
           "update",
           "idem-update-0001",
         ),
@@ -90,6 +90,7 @@ describe("feature CRUD handlers", () => {
       values: { status: "draft" },
     });
     expect(port.update).toHaveBeenCalledWith({
+      expectedVersion: 2,
       id: "order-2",
       idempotencyKey: "idem-update-0001",
       resource: "orders.orders",
@@ -101,13 +102,42 @@ describe("feature CRUD handlers", () => {
     const port = createPort();
     const handler = createFeatureCrudHandlers(port)["crud.delete"];
     await expect(
-      handler?.(invocation({ id: "order-1" }, "delete")),
+      handler?.(
+        invocation(
+          { expectedVersion: 3, id: "order-1" },
+          "delete",
+          "idem-delete-0001",
+        ),
+      ),
     ).resolves.toEqual({
       deleted: true,
     });
     expect(port.delete).toHaveBeenCalledWith({
+      expectedVersion: 3,
+      id: "order-1",
+      idempotencyKey: "idem-delete-0001",
+      resource: "orders.orders",
+    });
+  });
+
+  it("forwards only the trusted tenant from the request context", async () => {
+    const port = createPort();
+    const handler = createFeatureCrudHandlers(port)["crud.get"];
+
+    await handler?.(
+      invocation(
+        { id: "order-1", tenantId: "spoofed" },
+        "get",
+        undefined,
+        true,
+        "tenant-1",
+      ),
+    );
+
+    expect(port.get).toHaveBeenCalledWith({
       id: "order-1",
       resource: "orders.orders",
+      tenantId: "tenant-1",
     });
   });
 
@@ -128,6 +158,15 @@ describe("feature CRUD handlers", () => {
       "missing idempotency",
       invocation({ values: {} }, "create"),
       "Missing idempotency key",
+    ],
+    [
+      "invalid expected version",
+      invocation(
+        { expectedVersion: 0, id: "order-1", values: {} },
+        "update",
+        "idem-update-0001",
+      ),
+      "Expected version must be a positive integer",
     ],
   ])("rejects %s", async (_label, request, message) => {
     const port = createPort();
@@ -152,9 +191,14 @@ function invocation(
   operationId: "create" | "delete" | "get" | "list" | "update" = "list",
   idempotencyKey?: string,
   hasResource = true,
+  tenantId?: string,
 ): FeatureOperationInvocation {
   return {
-    context: { permissions: new Set(), requestId: "request-1" },
+    context: {
+      permissions: new Set(),
+      requestId: "request-1",
+      ...(tenantId ? { tenantId } : {}),
+    },
     featureId: "orders",
     ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
     input,
