@@ -16,8 +16,15 @@ export interface FeatureSeoDefinition {
 }
 
 export interface FeaturePlatformRoutes {
-  readonly mobile?: { readonly path: string };
-  readonly web?: { readonly path: string; readonly seo: FeatureSeoDefinition };
+  readonly mobile?: {
+    readonly params?: Readonly<Record<string, FeatureValueSchema>>;
+    readonly path: string;
+  };
+  readonly web?: {
+    readonly params?: Readonly<Record<string, FeatureValueSchema>>;
+    readonly path: string;
+    readonly seo: FeatureSeoDefinition;
+  };
 }
 
 export interface FeatureLayoutNode {
@@ -59,6 +66,28 @@ export type FeatureValueSchema =
       readonly minimum?: number;
       readonly type: "number";
     }
+  | {
+      readonly maximum?: number;
+      readonly minimum?: number;
+      readonly type: "integer";
+    }
+  | {
+      readonly precision: number;
+      readonly scale: number;
+      readonly type: "decimal";
+    }
+  | {
+      readonly resource: string;
+      readonly type: "reference";
+    }
+  | {
+      readonly type: "nullable";
+      readonly value: FeatureValueSchema;
+    }
+  | {
+      readonly oneOf: readonly FeatureValueSchema[];
+      readonly type: "union";
+    }
   | { readonly type: "boolean" }
   | { readonly type: "null" }
   | {
@@ -94,14 +123,46 @@ export interface FeatureOperationDefinition {
 
 export interface FeatureResourceFieldDefinition {
   readonly create?: boolean;
+  readonly computed?: {
+    readonly dependencies: readonly string[];
+    readonly handler: string;
+  };
+  readonly exposure?: "private" | "public";
   readonly required: boolean;
   readonly schema: FeatureValueSchema;
   readonly update?: boolean;
 }
 
+export interface FeatureResourceIndexDefinition {
+  readonly fields: readonly string[];
+  readonly id: string;
+  readonly unique?: boolean;
+}
+
+export interface FeatureResourceRelationDefinition {
+  readonly field: string;
+  readonly onDelete: "cascade" | "restrict" | "set-null";
+  readonly resource: string;
+  readonly type: "many-to-one" | "one-to-many" | "one-to-one";
+}
+
 export interface FeatureResourceDefinition {
+  readonly concurrency?: {
+    readonly field: string;
+    readonly mode: "version";
+  };
   readonly fields: Readonly<Record<string, FeatureResourceFieldDefinition>>;
   readonly id: string;
+  readonly indexes?: readonly FeatureResourceIndexDefinition[];
+  readonly ownership?:
+    | { readonly mode: "global" }
+    | { readonly mode: "tenant"; readonly field: string };
+  readonly relations?: readonly FeatureResourceRelationDefinition[];
+  readonly retention?: {
+    readonly archiveAfterDays?: number;
+    readonly deleteAfterDays?: number;
+    readonly softDelete: boolean;
+  };
   readonly seed?: readonly Readonly<Record<string, JsonValue>>[];
 }
 
@@ -130,6 +191,7 @@ export interface CompiledFeatureRoute {
   readonly access: FeatureAccessDefinition;
   readonly featureId: string;
   readonly pageId: string;
+  readonly params?: Readonly<Record<string, FeatureValueSchema>>;
   readonly path: string;
   readonly platform: "mobile" | "web";
   readonly seo?: FeatureSeoDefinition;

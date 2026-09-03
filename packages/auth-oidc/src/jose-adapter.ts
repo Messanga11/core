@@ -1,5 +1,5 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
-
+import type { OidcIdTokenVerifierPort } from "./authorization-code";
 import { OidcError } from "./index";
 import {
   createOidcTokenVerifier,
@@ -60,4 +60,36 @@ export function createJoseOidcTokenVerifier(
   };
 
   return createOidcTokenVerifier(config, claimsVerifier);
+}
+
+export function createJoseOidcIdTokenVerifier(
+  config: OidcVerifierConfig,
+): OidcIdTokenVerifierPort {
+  const verifier = createRemoteJWKSet(new URL(config.jwksUri));
+  return Object.freeze({
+    async verifyIdToken(
+      options: Parameters<OidcIdTokenVerifierPort["verifyIdToken"]>[0],
+    ): Promise<void> {
+      try {
+        const result = await jwtVerify(options.token, verifier, {
+          algorithms: [...config.algorithms],
+          audience:
+            typeof config.audience === "string"
+              ? config.audience
+              : [...config.audience],
+          clockTolerance: config.clockToleranceSeconds ?? 30,
+          issuer: new URL(config.issuer).href,
+        });
+        if (result.payload.nonce !== options.expectedNonce) {
+          throw new OidcError("AUTHENTICATION_FAILED");
+        }
+      } catch (error) {
+        if (error instanceof OidcError) throw error;
+        if (isAuthenticationFailure(error)) {
+          throw new OidcError("AUTHENTICATION_FAILED", error);
+        }
+        throw new OidcError("SERVICE_UNAVAILABLE", error);
+      }
+    },
+  });
 }

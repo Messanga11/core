@@ -39,6 +39,7 @@ async function listRecords(
     offset: readNumber(input.offset),
     resource: resourceKey(invocation),
     ...(sort ? { sort } : {}),
+    ...tenantScope(invocation),
   });
   return { records: result.records, total: result.total };
 }
@@ -50,6 +51,7 @@ async function getRecord(
   const record = await port.get({
     id: readString(readObject(invocation.input).id),
     resource: resourceKey(invocation),
+    ...tenantScope(invocation),
   });
   return record ? { found: true, record } : { found: false };
 }
@@ -61,6 +63,7 @@ async function createRecord(
   return port.create({
     idempotencyKey: readIdempotencyKey(invocation),
     resource: resourceKey(invocation),
+    ...tenantScope(invocation),
     values: readObject(invocation.input).values ?? null,
   });
 }
@@ -71,9 +74,11 @@ async function updateRecord(
 ): Promise<CrudRecord> {
   const input = readObject(invocation.input);
   return port.update({
+    ...expectedVersion(input.expectedVersion),
     id: readString(input.id),
     idempotencyKey: readIdempotencyKey(invocation),
     resource: resourceKey(invocation),
+    ...tenantScope(invocation),
     values: input.values ?? null,
   });
 }
@@ -84,10 +89,31 @@ async function deleteRecord(
 ): Promise<JsonValue> {
   const input = readObject(invocation.input);
   await port.delete({
+    ...expectedVersion(input.expectedVersion),
     id: readString(input.id),
+    idempotencyKey: readIdempotencyKey(invocation),
     resource: resourceKey(invocation),
+    ...tenantScope(invocation),
   });
   return { deleted: true };
+}
+
+function expectedVersion(
+  value: JsonValue | undefined,
+): Readonly<{ expectedVersion: number }> | Readonly<Record<string, never>> {
+  if (value === undefined) return {};
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) {
+    throw new TypeError("Expected version must be a positive integer");
+  }
+  return { expectedVersion: value };
+}
+
+function tenantScope(
+  invocation: FeatureOperationInvocation,
+): Readonly<{ tenantId: string }> | Readonly<Record<string, never>> {
+  return invocation.context.tenantId
+    ? { tenantId: invocation.context.tenantId }
+    : {};
 }
 
 function resourceKey(invocation: FeatureOperationInvocation): string {

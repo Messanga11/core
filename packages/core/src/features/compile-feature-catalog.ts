@@ -7,14 +7,13 @@ import type {
   FeatureOperationDefinition,
   FeaturePageDefinition,
   FeatureResourceDefinition,
+  FeatureValueSchema,
 } from "./feature-definition";
 import { FeatureDefinitionError } from "./feature-error";
-import { validateFeatureValue } from "./value-schema";
+import { validateResourceDefinition } from "./resource-validation";
 
 const IDENTIFIER = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
-const FIELD_IDENTIFIER = /^[a-z][A-Za-z0-9]*$/;
 const VERSION = /^\d+\.\d+\.\d+$/;
-const ROUTE = /^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/;
 const PERMISSION = /^[a-z][a-z0-9]*(?:[.:][a-z0-9-]+)+$/;
 
 export function defineFeature<const Definition extends FeatureDefinition>(
@@ -97,7 +96,10 @@ function validateFeature(feature: FeatureDefinition, path: string): void {
     );
   }
   for (const resource of feature.resources ?? []) {
-    validateResource(resource, `${path}.resources.${resource.id || "unknown"}`);
+    validateResourceDefinition(
+      resource,
+      `${path}.resources.${resource.id || "unknown"}`,
+    );
     assertUnique(resourceIds, resource.id, `${path}.resources.${resource.id}`);
   }
   for (const operation of feature.operations) {
@@ -118,37 +120,6 @@ function validateFeature(feature: FeatureDefinition, path: string): void {
       operationIds,
       `${path}.pages.${page.id}.root`,
     );
-  }
-}
-
-function validateResource(
-  resource: FeatureResourceDefinition,
-  path: string,
-): void {
-  assertIdentifier(resource.id, `${path}.id`);
-  const fields = Object.entries(resource.fields);
-  if (fields.length === 0) fail("INVALID_DEFINITION", `${path}.fields`);
-  for (const [name] of fields) {
-    if (!FIELD_IDENTIFIER.test(name))
-      fail("INVALID_DEFINITION", `${path}.fields.${name}`);
-  }
-  if (resource.fields.id?.schema.type !== "string") {
-    fail("INVALID_DEFINITION", `${path}.fields.id`);
-  }
-  const recordSchema = {
-    additionalProperties: false,
-    properties: Object.fromEntries(
-      fields.map(([name, field]) => [name, field.schema]),
-    ),
-    required: fields
-      .filter(([, field]) => field.required)
-      .map(([name]) => name),
-    type: "object",
-  } as const;
-  for (const [index, record] of (resource.seed ?? []).entries()) {
-    if (!validateFeatureValue(recordSchema, record).success) {
-      fail("INVALID_DEFINITION", `${path}.seed.${index}`);
-    }
   }
 }
 
@@ -193,9 +164,9 @@ function validatePage(page: FeaturePageDefinition, path: string): void {
   if (!page.routes.mobile && !page.routes.web)
     fail("INVALID_DEFINITION", `${path}.routes`);
   if (page.routes.mobile)
-    assertRoute(page.routes.mobile.path, `${path}.routes.mobile.path`);
+    validateRoute(page.routes.mobile, `${path}.routes.mobile`);
   if (page.routes.web) {
-    assertRoute(page.routes.web.path, `${path}.routes.web.path`);
+    validateRoute(page.routes.web, `${path}.routes.web`);
     assertRoute(
       page.routes.web.seo.canonicalPath,
       `${path}.routes.web.seo.canonicalPath`,
@@ -211,6 +182,34 @@ function validatePage(page: FeaturePageDefinition, path: string): void {
   }
   if (page.root.kind !== "layout")
     fail("INVALID_DEFINITION", `${path}.root.kind`);
+}
+
+function validateRoute(
+  route: {
+    readonly params?: Readonly<Record<string, FeatureValueSchema>>;
+    readonly path: string;
+  },
+  path: string,
+): void {
+  assertRoute(route.path, `${path}.path`);
+  const placeholders = route.path
+    .split("/")
+    .filter((segment) => segment.startsWith(":"))
+    .map((segment) => segment.slice(1));
+  const parameters = Object.keys(route.params ?? {});
+  if (
+    placeholders.length !== parameters.length ||
+    placeholders.some((name) => !route.params?.[name])
+  ) {
+    fail("INVALID_DEFINITION", `${path}.params`);
+  }
+  for (const [name, schema] of Object.entries(route.params ?? {})) {
+    if (!placeholders.includes(name))
+      fail("INVALID_DEFINITION", `${path}.params.${name}`);
+    if (schema.type !== "string" && schema.type !== "reference") {
+      fail("INVALID_DEFINITION", `${path}.params.${name}`);
+    }
+  }
 }
 
 function validateAccess(
@@ -277,6 +276,7 @@ function indexFeature(
         featureId: feature.id,
         pageId: page.id,
         path: page.routes.web.path,
+        ...(page.routes.web.params ? { params: page.routes.web.params } : {}),
         platform: "web",
         seo: page.routes.web.seo,
       });
@@ -287,6 +287,9 @@ function indexFeature(
         featureId: feature.id,
         pageId: page.id,
         path: page.routes.mobile.path,
+        ...(page.routes.mobile.params
+          ? { params: page.routes.mobile.params }
+          : {}),
         platform: "mobile",
       });
     }
@@ -309,7 +312,15 @@ function assertIdentifier(value: string, path: string): void {
 }
 
 function assertRoute(value: string, path: string): void {
-  if (!ROUTE.test(value)) fail("INVALID_DEFINITION", path);
+  if (value === "/") return;
+  if (!value.startsWith("/") || value.endsWith("/")) {
+    fail("INVALID_DEFINITION", path);
+  }
+  for (const segment of value.slice(1).split("/")) {
+    const isStatic = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(segment);
+    const isParameter = /^:[a-z][A-Za-z0-9]*$/.test(segment);
+    if (!isStatic && !isParameter) fail("INVALID_DEFINITION", path);
+  }
 }
 
 function assertNonEmpty(value: string, path: string): void {

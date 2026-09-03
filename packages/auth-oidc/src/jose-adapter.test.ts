@@ -1,7 +1,10 @@
 import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createJoseOidcTokenVerifier } from "./jose-adapter";
+import {
+  createJoseOidcIdTokenVerifier,
+  createJoseOidcTokenVerifier,
+} from "./jose-adapter";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -105,5 +108,44 @@ describe("createJoseOidcTokenVerifier", () => {
       code: "SERVICE_UNAVAILABLE",
       message: "SERVICE_UNAVAILABLE",
     });
+  });
+});
+
+describe("createJoseOidcIdTokenVerifier", () => {
+  it("validates the callback nonce after signature and claim verification", async () => {
+    const { privateKey, publicKey } = await generateKeyPair("RS256");
+    const publicJwk = await exportJWK(publicKey);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            keys: [{ ...publicJwk, alg: "RS256", kid: "key-1", use: "sig" }],
+          }),
+          { headers: { "content-type": "application/json" }, status: 200 },
+        ),
+      ),
+    );
+    const token = await new SignJWT({ nonce: "nonce-value-00001" })
+      .setProtectedHeader({ alg: "RS256", kid: "key-1" })
+      .setIssuer("https://identity.example.com/")
+      .setAudience("messanga-app")
+      .setSubject("actor_123")
+      .setIssuedAt()
+      .setExpirationTime("5m")
+      .sign(privateKey);
+    const verifier = createJoseOidcIdTokenVerifier({
+      algorithms: ["RS256"],
+      audience: "messanga-app",
+      issuer: "https://identity.example.com",
+      jwksUri: "https://identity.example.com/.well-known/jwks.json",
+    });
+
+    await expect(
+      verifier.verifyIdToken({ expectedNonce: "nonce-value-00001", token }),
+    ).resolves.toBeUndefined();
+    await expect(
+      verifier.verifyIdToken({ expectedNonce: "attacker-nonce-01", token }),
+    ).rejects.toMatchObject({ code: "AUTHENTICATION_FAILED" });
   });
 });
