@@ -22,6 +22,18 @@ it("forces tenant RLS for generated feature resources and idempotency", async ()
   );
 });
 
+it("stores OIDC provider tokens as encrypted tenant-scoped data", async () => {
+  const migrationUrl = new URL(
+    "../migrations/005_oidc_token_vault.sql",
+    import.meta.url,
+  );
+  const sql = await readFile(fileURLToPath(migrationUrl), "utf8");
+  expect(sql).toContain("ciphertext bytea NOT NULL");
+  expect(sql).toContain("oidc_token_vault FORCE ROW LEVEL SECURITY");
+  expect(sql).not.toContain("access_token");
+  expect(sql).not.toContain("refresh_token");
+});
+
 it("applies each migration once while holding an advisory lock", async () => {
   const calls: string[] = [];
   const sql = "CREATE TABLE example(id bigint PRIMARY KEY)";

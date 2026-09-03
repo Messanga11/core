@@ -116,11 +116,11 @@ async function createRecord(
   if (replay) return replay;
   const values = validateRecord(definition, request.values);
   const record = { ...values, id: crypto.randomUUID() } satisfies CrudRecord;
-  const inserted = await client.query<{ data: unknown }>(
-    "INSERT INTO messanga11_feature_records (tenant_id, resource, id, data) VALUES ($1, $2, $3, $4::jsonb) RETURNING data",
+  const inserted = await client.query<StoredRecordRow>(
+    "INSERT INTO messanga11_feature_records (tenant_id, resource, id, data) VALUES ($1, $2, $3, $4::jsonb) RETURNING data, version",
     [tenantId, request.resource, record.id, record],
   );
-  const result = decodeRecord(inserted.rows[0]?.data);
+  const result = decodeStoredRecord(inserted.rows[0]);
   await storeReplay(
     client,
     tenantId,
@@ -153,13 +153,13 @@ async function updateRecord(
   );
   if (replay) return replay;
   const values = validateRecord(definition, request.values);
-  const updated = await client.query<{ data: unknown }>(
-    "UPDATE messanga11_feature_records SET data = data || $4::jsonb, version = version + 1, updated_at = clock_timestamp() WHERE tenant_id = $1 AND resource = $2 AND id = $3 AND version = $5 RETURNING data",
+  const updated = await client.query<StoredRecordRow>(
+    "UPDATE messanga11_feature_records SET data = data || $4::jsonb, version = version + 1, updated_at = clock_timestamp() WHERE tenant_id = $1 AND resource = $2 AND id = $3 AND version = $5 RETURNING data, version",
     [tenantId, request.resource, request.id, values, request.expectedVersion],
   );
   const row = updated.rows[0];
   if (!row) throw new Error("Resource version conflict");
-  const result = decodeRecord(row.data);
+  const result = decodeStoredRecord(row);
   await storeReplay(
     client,
     tenantId,
@@ -202,11 +202,11 @@ async function getRecord(
   resource: string,
   id: string,
 ): Promise<CrudRecord | undefined> {
-  const result = await client.query<{ data: unknown }>(
-    "SELECT data FROM messanga11_feature_records WHERE tenant_id = $1 AND resource = $2 AND id = $3",
+  const result = await client.query<StoredRecordRow>(
+    "SELECT data, version FROM messanga11_feature_records WHERE tenant_id = $1 AND resource = $2 AND id = $3",
     [tenantId, resource, id],
   );
-  return result.rows[0] ? decodeRecord(result.rows[0].data) : undefined;
+  return result.rows[0] ? decodeStoredRecord(result.rows[0]) : undefined;
 }
 
 async function listRecords(
@@ -216,16 +216,13 @@ async function listRecords(
   definition: PostgresFeatureResourceDefinition,
 ) {
   const query = buildListQuery(definition, request, tenantId);
-  const rows = await client.query<{ data: unknown }>(
-    query.select,
-    query.values,
-  );
+  const rows = await client.query<StoredRecordRow>(query.select, query.values);
   const count = await client.query<{ count: string }>(
     query.count,
     query.filterValues,
   );
   return {
-    records: rows.rows.map((row) => decodeRecord(row.data)),
+    records: rows.rows.map(decodeStoredRecord),
     total: Number.parseInt(count.rows[0]?.count ?? "0", 10),
   };
 }
@@ -245,7 +242,7 @@ function buildListQuery(
   return {
     count: `SELECT count(*)::text AS count${base}`,
     filterValues,
-    select: `SELECT data${base}${order}${pagination}`,
+    select: `SELECT data, version${base}${order}${pagination}`,
     values,
   };
 }
@@ -364,6 +361,20 @@ function decodeRecord(value: unknown): CrudRecord {
   if (typeof record.id !== "string")
     throw new TypeError("Invalid database record");
   return record as CrudRecord;
+}
+
+interface StoredRecordRow extends Record<string, unknown> {
+  readonly data: unknown;
+  readonly version: unknown;
+}
+
+function decodeStoredRecord(row: StoredRecordRow | undefined): CrudRecord {
+  if (!row) throw new TypeError("Invalid database record");
+  const version = Number(row.version);
+  if (!Number.isSafeInteger(version) || version < 1) {
+    throw new TypeError("Invalid database record");
+  }
+  return Object.freeze({ ...decodeRecord(row.data), version });
 }
 
 async function rollback(client: SqlClientPort): Promise<void> {

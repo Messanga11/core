@@ -40,7 +40,7 @@ describe("Postgres feature resource adapter", () => {
     const harness = createHarness((text) => {
       if (text.startsWith("SELECT data")) {
         return result([
-          { data: { customer: "Ada", id: "order-1", total: 25 } },
+          { data: { customer: "Ada", id: "order-1", total: 25 }, version: "3" },
         ]);
       }
       if (text.startsWith("SELECT count")) return result([{ count: "1" }]);
@@ -61,7 +61,7 @@ describe("Postgres feature resource adapter", () => {
         tenantId: "tenant-1",
       }),
     ).resolves.toEqual({
-      records: [{ customer: "Ada", id: "order-1", total: 25 }],
+      records: [{ customer: "Ada", id: "order-1", total: 25, version: 3 }],
       total: 1,
     });
     const listCall = harness.query.mock.calls.find(([text]) =>
@@ -87,7 +87,7 @@ describe("Postgres feature resource adapter", () => {
         return result(replay ? [{ result: replay }] : []);
       }
       if (text.startsWith("INSERT INTO messanga11_feature_records")) {
-        return result([{ data: values?.[3] }], 1);
+        return result([{ data: values?.[3], version: "1" }], 1);
       }
       if (text.startsWith("INSERT INTO messanga11_feature_idempotency")) {
         replay = values?.[4] as Readonly<Record<string, unknown>>;
@@ -109,6 +109,7 @@ describe("Postgres feature resource adapter", () => {
     const second = await port.create(request);
 
     expect(second).toEqual(first);
+    expect(first.version).toBe(1);
     expect(
       harness.query.mock.calls.filter(([text]) =>
         String(text).startsWith("INSERT INTO messanga11_feature_records"),

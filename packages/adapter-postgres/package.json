@@ -1,6 +1,6 @@
 {
   "name": "@messanga11/adapter-postgres",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Server-only PostgreSQL adapter for Messanga11 core ports.",
   "license": "MIT",
   "type": "module",
@@ -39,8 +39,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@messanga11/auth-oidc": "^0.1.1",
-    "@messanga11/core": "^0.5.0",
+    "@messanga11/auth-oidc": "^0.2.0",
+    "@messanga11/core": "^0.6.0",
     "@messanga11/tenancy": "^0.1.0",
     "pg": "^8.16.3"
   },

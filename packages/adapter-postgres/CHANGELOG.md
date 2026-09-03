@@ -1,4 +1,4 @@
-# @messanga11/auth-oidc
+# @messanga11/adapter-postgres
 
 ## 0.2.0
 
@@ -10,10 +10,4 @@
 
 - Updated dependencies [[`cb0aeef`](https://github.com/Messanga11/core/commit/cb0aeef103e89fabc880f469b1483c18fb72cdee)]:
   - @messanga11/core@0.6.0
-
-## 0.1.1
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @messanga11/core@0.5.0
+  - @messanga11/auth-oidc@0.2.0
