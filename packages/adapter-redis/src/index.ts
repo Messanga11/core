@@ -1,6 +1,7 @@
 export { createRedisOidcLoginTransactionStore } from "./auth-transaction";
 export type { RedisAdapterErrorCode } from "./errors";
 export { RedisAdapterError } from "./errors";
+export { REDIS_FUNCTION_LIBRARY } from "./functions";
 export type {
   IdempotencyDecision,
   IdempotencyLease,
