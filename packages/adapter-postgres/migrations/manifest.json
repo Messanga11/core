@@ -3,5 +3,15 @@
     "version": 1,
     "name": "tenancy-foundation",
     "file": "001_tenancy_foundation.sql"
+  },
+  {
+    "version": 2,
+    "name": "feature-resources",
+    "file": "002_feature_resources.sql"
+  },
+  {
+    "version": 3,
+    "name": "outbox-dead-letters",
+    "file": "003_outbox_dead_letters.sql"
   }
 ]

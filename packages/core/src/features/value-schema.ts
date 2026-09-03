@@ -57,6 +57,26 @@ function validateNode(
     validateNumber(schema, value, path, issues);
     return;
   }
+  if (schema.type === "integer") {
+    validateInteger(schema, value, path, issues);
+    return;
+  }
+  if (schema.type === "decimal") {
+    validateDecimal(schema, value, path, issues);
+    return;
+  }
+  if (schema.type === "reference") {
+    validateReference(value, path, issues);
+    return;
+  }
+  if (schema.type === "nullable") {
+    if (value !== null) validateNode(schema.value, value, path, issues);
+    return;
+  }
+  if (schema.type === "union") {
+    validateUnion(schema, value, path, issues);
+    return;
+  }
   if (schema.type === "boolean" || schema.type === "null") {
     const matches =
       schema.type === "null" ? value === null : typeof value === "boolean";
@@ -107,6 +127,77 @@ function validateNumber(
     issues.push({ code: "MIN", path });
   if (schema.maximum !== undefined && value > schema.maximum)
     issues.push({ code: "MAX", path });
+}
+
+function validateInteger(
+  schema: Extract<FeatureValueSchema, { type: "integer" }>,
+  value: unknown,
+  path: readonly string[],
+  issues: FeatureValueIssue[],
+): void {
+  if (typeof value !== "number" || !Number.isSafeInteger(value)) {
+    issues.push({ code: "TYPE", path });
+    return;
+  }
+  if (schema.minimum !== undefined && value < schema.minimum) {
+    issues.push({ code: "MIN", path });
+  }
+  if (schema.maximum !== undefined && value > schema.maximum) {
+    issues.push({ code: "MAX", path });
+  }
+}
+
+function validateDecimal(
+  schema: Extract<FeatureValueSchema, { type: "decimal" }>,
+  value: unknown,
+  path: readonly string[],
+  issues: FeatureValueIssue[],
+): void {
+  if (typeof value !== "string") {
+    issues.push({ code: "TYPE", path });
+    return;
+  }
+  const match = /^-?(0|[1-9]\d*)(?:\.(\d+))?$/.exec(value);
+  if (!match) {
+    issues.push({ code: "FORMAT", path });
+    return;
+  }
+  const integerDigits = match[1]?.length ?? 0;
+  const decimalDigits = match[2]?.length ?? 0;
+  if (
+    decimalDigits > schema.scale ||
+    integerDigits + decimalDigits > schema.precision
+  ) {
+    issues.push({ code: "FORMAT", path });
+  }
+}
+
+function validateReference(
+  value: unknown,
+  path: readonly string[],
+  issues: FeatureValueIssue[],
+): void {
+  if (typeof value !== "string") {
+    issues.push({ code: "TYPE", path });
+    return;
+  }
+  if (value.length < 1) issues.push({ code: "MIN", path });
+  if (value.length > 128) issues.push({ code: "MAX", path });
+}
+
+function validateUnion(
+  schema: Extract<FeatureValueSchema, { type: "union" }>,
+  value: unknown,
+  path: readonly string[],
+  issues: FeatureValueIssue[],
+): void {
+  let matches = 0;
+  for (const variant of schema.oneOf) {
+    const candidateIssues: FeatureValueIssue[] = [];
+    validateNode(variant, value, path, candidateIssues);
+    if (candidateIssues.length === 0) matches += 1;
+  }
+  if (matches !== 1) issues.push({ code: "TYPE", path });
 }
 
 function validateArray(

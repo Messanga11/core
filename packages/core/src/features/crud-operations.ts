@@ -14,6 +14,7 @@ export interface CreateFeatureCrudOperationsOptions {
 
 const RATE_LIMIT = { cost: 1, limit: 100, windowMs: 60_000 } as const;
 const ID_SCHEMA = { maxLength: 128, minLength: 1, type: "string" } as const;
+const VERSION_SCHEMA = { minimum: 1, type: "integer" } as const;
 
 // SOT[feature-crud]: Generates the complete protected operation contract from one resource declaration.
 export function createFeatureCrudOperations(
@@ -55,8 +56,12 @@ export function createFeatureCrudOperations(
       "update",
       {
         additionalProperties: false,
-        properties: { id: ID_SCHEMA, values: updateValues },
-        required: ["id", "values"],
+        properties: {
+          ...versionProperty(options.resource),
+          id: ID_SCHEMA,
+          values: updateValues,
+        },
+        required: versionedRequired(options.resource, "values"),
         type: "object",
       },
       record,
@@ -65,7 +70,7 @@ export function createFeatureCrudOperations(
     mutationOperation(
       options,
       "delete",
-      idInputSchema(),
+      idInputSchema(options.resource),
       {
         additionalProperties: false,
         properties: { deleted: { type: "boolean" } },
@@ -119,15 +124,15 @@ function mutationOperation(
 }
 
 function createRecordSchema(resource: FeatureResourceDefinition) {
+  const fields = Object.entries(resource.fields).filter(
+    ([, field]) => field.exposure !== "private",
+  );
   return {
     additionalProperties: false,
     properties: Object.fromEntries(
-      Object.entries(resource.fields).map(([name, field]) => [
-        name,
-        field.schema,
-      ]),
+      fields.map(([name, field]) => [name, field.schema]),
     ),
-    required: Object.entries(resource.fields)
+    required: fields
       .filter(([, field]) => field.required)
       .map(([name]) => name),
     type: "object",
@@ -139,7 +144,9 @@ function createWriteSchema(
   capability: "create" | "update",
 ) {
   const fields = Object.entries(resource.fields).filter(([name, field]) => {
-    if (name === "id") return false;
+    if (name === "id" || field.computed || field.exposure === "private") {
+      return false;
+    }
     return capability === "create"
       ? field.create !== false
       : field.update !== false;
@@ -157,13 +164,30 @@ function createWriteSchema(
   } as const satisfies FeatureValueSchema;
 }
 
-function idInputSchema() {
+function idInputSchema(resource?: FeatureResourceDefinition) {
   return {
     additionalProperties: false,
-    properties: { id: ID_SCHEMA },
-    required: ["id"],
+    properties: { ...versionProperty(resource), id: ID_SCHEMA },
+    required: versionedRequired(resource),
     type: "object",
   } as const satisfies FeatureValueSchema;
+}
+
+function versionProperty(resource: FeatureResourceDefinition | undefined) {
+  return resource?.concurrency?.mode === "version"
+    ? { expectedVersion: VERSION_SCHEMA }
+    : {};
+}
+
+function versionedRequired(
+  resource: FeatureResourceDefinition | undefined,
+  extra?: string,
+): readonly string[] {
+  const required = ["id"];
+  if (resource?.concurrency?.mode === "version")
+    required.push("expectedVersion");
+  if (extra) required.push(extra);
+  return required;
 }
 
 function listInputSchema(resource: FeatureResourceDefinition) {

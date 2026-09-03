@@ -1,7 +1,26 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { expect, it } from "vitest";
 import { runMigrations } from "./migrations.js";
 import type { SqlClientPort, SqlPoolPort } from "./sql.js";
+
+it("forces tenant RLS for generated feature resources and idempotency", async () => {
+  const migrationUrl = new URL(
+    "../migrations/002_feature_resources.sql",
+    import.meta.url,
+  );
+  const sql = await readFile(fileURLToPath(migrationUrl), "utf8");
+
+  expect(sql).toContain("tenant_id text NOT NULL");
+  expect(sql).toContain("messanga11_feature_records FORCE ROW LEVEL SECURITY");
+  expect(sql).toContain(
+    "messanga11_feature_idempotency FORCE ROW LEVEL SECURITY",
+  );
+  expect(sql.match(/current_setting\('app\.tenant_id', true\)/g)).toHaveLength(
+    4,
+  );
+});
 
 it("applies each migration once while holding an advisory lock", async () => {
   const calls: string[] = [];

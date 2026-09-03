@@ -28,6 +28,7 @@ export interface CrudListRequest {
   readonly offset: number;
   readonly resource: string;
   readonly sort?: readonly CrudSort[];
+  readonly tenantId?: string;
 }
 
 export interface CrudListResult<RecordType extends CrudRecord = CrudRecord> {
@@ -38,19 +39,29 @@ export interface CrudListResult<RecordType extends CrudRecord = CrudRecord> {
 export interface CrudWriteRequest<Values extends JsonValue = JsonValue> {
   readonly idempotencyKey: string;
   readonly resource: string;
+  readonly tenantId?: string;
   readonly values: Values;
 }
 
 export interface CrudUpdateRequest<Values extends JsonValue = JsonValue>
   extends CrudWriteRequest<Values> {
   readonly id: string;
+  readonly expectedVersion?: number;
 }
 
 export interface CrudPort<RecordType extends CrudRecord = CrudRecord> {
   create(request: CrudWriteRequest): Promise<RecordType>;
-  delete(request: Readonly<{ id: string; resource: string }>): Promise<void>;
+  delete(
+    request: Readonly<{
+      expectedVersion?: number;
+      id: string;
+      idempotencyKey?: string;
+      resource: string;
+      tenantId?: string;
+    }>,
+  ): Promise<void>;
   get(
-    request: Readonly<{ id: string; resource: string }>,
+    request: Readonly<{ id: string; resource: string; tenantId?: string }>,
   ): Promise<RecordType | undefined>;
   list(request: CrudListRequest): Promise<CrudListResult<RecordType>>;
   update(request: CrudUpdateRequest): Promise<RecordType>;

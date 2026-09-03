@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import process from "node:process";
@@ -18,51 +18,62 @@ const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
 const releaseTag = process.argv[3];
 
 await mkdir(outputDirectory, { recursive: true });
-
-const manifest = JSON.parse(
-  await readFile(join(workspaceRoot, "packages/core/package.json"), "utf8"),
-);
-if (manifest.name !== CORE_PACKAGE || typeof manifest.version !== "string") {
-  throw new Error("The core package manifest is invalid.");
-}
-if (releaseTag && releaseTag !== `core-v${manifest.version}`) {
+const packages = await readPublicPackages();
+const core = packages.find((entry) => entry.name === CORE_PACKAGE);
+if (!core) throw new Error("The core package manifest is missing.");
+if (releaseTag && releaseTag !== `core-v${core.version}`) {
   throw new Error(
-    `Release tag ${releaseTag} does not match core-v${manifest.version}.`,
+    `Release tag ${releaseTag} does not match core-v${core.version}.`,
   );
 }
 
-const { stdout: packOutput } = await execFileAsync(
-  npmExecutable,
-  [
-    "pack",
-    "--workspace",
-    CORE_PACKAGE,
-    "--pack-destination",
-    outputDirectory,
-    "--json",
-  ],
-  { cwd: workspaceRoot },
-);
-const packed = JSON.parse(packOutput);
-const packResult = packed[0];
-if (
-  packed.length !== 1 ||
-  packResult?.name !== CORE_PACKAGE ||
-  packResult.version !== manifest.version ||
-  typeof packResult.filename !== "string"
-) {
-  throw new Error("npm pack returned an unexpected core artifact.");
+const artifacts = [];
+for (const packageInfo of packages) {
+  const { stdout } = await execFileAsync(
+    npmExecutable,
+    [
+      "pack",
+      "--workspace",
+      packageInfo.name,
+      "--pack-destination",
+      outputDirectory,
+      "--json",
+    ],
+    { cwd: workspaceRoot },
+  );
+  const packed = JSON.parse(stdout);
+  const result = packed[0];
+  if (
+    packed.length !== 1 ||
+    result?.name !== packageInfo.name ||
+    result.version !== packageInfo.version ||
+    typeof result.filename !== "string"
+  ) {
+    throw new Error(
+      `npm pack returned an unexpected artifact for ${packageInfo.name}.`,
+    );
+  }
+  artifacts.push({
+    filename: result.filename,
+    path: join(outputDirectory, result.filename),
+  });
 }
 
-const tarballPath = join(outputDirectory, packResult.filename);
-const sbomFilename = `messanga11-core-${manifest.version}.sbom.cdx.json`;
+const sbomFilename = `messanga11-ecosystem-${core.version}.sbom.cdx.json`;
 const sbomPath = join(outputDirectory, sbomFilename);
-const sbomWorkspace = await mkdtemp(join(tmpdir(), "messanga11-core-sbom-"));
+const sbomWorkspace = await mkdtemp(
+  join(tmpdir(), "messanga11-ecosystem-sbom-"),
+);
 await writeFile(
   join(sbomWorkspace, "package.json"),
   `${JSON.stringify({
-    dependencies: { [CORE_PACKAGE]: `file:${tarballPath}` },
-    name: "messanga11-core-sbom",
+    dependencies: Object.fromEntries(
+      packages.map((packageInfo) => [
+        packageInfo.name,
+        `file:${artifactFor(artifacts, packageInfo.name).path}`,
+      ]),
+    ),
+    name: "messanga11-ecosystem-sbom",
     private: true,
     version: "0.0.0",
   })}\n`,
@@ -76,20 +87,19 @@ await execFileAsync(
 const { stdout: sbom } = await execFileAsync(
   npmExecutable,
   ["sbom", "--sbom-format", "cyclonedx"],
-  { cwd: sbomWorkspace, maxBuffer: 10 * 1024 * 1024 },
+  { cwd: sbomWorkspace, maxBuffer: 20 * 1024 * 1024 },
 );
 await writeFile(sbomPath, sbom, "utf8");
+artifacts.push({ filename: sbomFilename, path: sbomPath });
 
 const checksums = [];
-for (const [filename, path] of [
-  [packResult.filename, tarballPath],
-  [sbomFilename, sbomPath],
-]) {
+for (const artifact of artifacts) {
   const digest = createHash("sha256")
-    .update(await readFile(path))
+    .update(await readFile(artifact.path))
     .digest("hex");
-  checksums.push(`${digest}  ${filename}`);
+  checksums.push(`${digest}  ${artifact.filename}`);
 }
+checksums.sort();
 await writeFile(
   join(outputDirectory, "SHA256SUMS"),
   `${checksums.join("\n")}\n`,
@@ -97,5 +107,33 @@ await writeFile(
 );
 
 process.stdout.write(
-  `Prepared ${packResult.filename}, ${sbomFilename}, and SHA256SUMS.\n`,
+  `Prepared ${artifacts.length} artifacts and SHA256SUMS for ${packages.length} packages.\n`,
 );
+
+async function readPublicPackages() {
+  const directoryNames = await readdir(join(workspaceRoot, "packages"));
+  const results = [];
+  for (const directoryName of directoryNames) {
+    const manifest = JSON.parse(
+      await readFile(
+        join(workspaceRoot, "packages", directoryName, "package.json"),
+        "utf8",
+      ),
+    );
+    if (
+      !manifest.private &&
+      typeof manifest.name === "string" &&
+      typeof manifest.version === "string"
+    ) {
+      results.push({ name: manifest.name, version: manifest.version });
+    }
+  }
+  return results.sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function artifactFor(artifacts, packageName) {
+  const prefix = `${packageName.replace("@", "").replace("/", "-")}-`;
+  const artifact = artifacts.find((entry) => entry.filename.startsWith(prefix));
+  if (!artifact) throw new Error(`Missing packed artifact for ${packageName}.`);
+  return artifact;
+}

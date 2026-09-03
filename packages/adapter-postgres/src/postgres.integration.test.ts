@@ -14,8 +14,18 @@ describePostgres("PostgreSQL 18 integration", () => {
       new URL("../migrations/001_tenancy_foundation.sql", import.meta.url),
       "utf8",
     );
+    const resourcesSql = await readFile(
+      new URL("../migrations/002_feature_resources.sql", import.meta.url),
+      "utf8",
+    );
+    const deadLettersSql = await readFile(
+      new URL("../migrations/003_outbox_dead_letters.sql", import.meta.url),
+      "utf8",
+    );
     const migrations = [
       { name: "tenancy-foundation", sql, version: 1 },
+      { name: "feature-resources", sql: resourcesSql, version: 2 },
+      { name: "outbox-dead-letters", sql: deadLettersSql, version: 3 },
     ] as const;
 
     try {
@@ -32,14 +42,17 @@ describePostgres("PostgreSQL 18 integration", () => {
             "idempotency_keys",
             "invitations",
             "memberships",
+            "messanga11_feature_idempotency",
+            "messanga11_feature_records",
             "outbox",
+            "outbox_dead_letters",
             "sessions",
             "tenants",
           ],
         ],
       );
 
-      expect(result.rows).toHaveLength(7);
+      expect(result.rows).toHaveLength(10);
       expect(result.rows.every((row) => row.relforcerowsecurity)).toBe(true);
     } finally {
       await pool.end();

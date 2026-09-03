@@ -6,7 +6,10 @@ import {
   FeatureDefinitionError,
   validateFeatureValue,
 } from ".";
-import type { FeatureDefinition } from "./feature-definition";
+import type {
+  FeatureDefinition,
+  FeatureResourceDefinition,
+} from "./feature-definition";
 import type { FeatureDefinitionErrorCode } from "./feature-error";
 
 const operation = {
@@ -166,6 +169,128 @@ describe("feature catalog", () => {
         schemaVersion: 1,
       }),
     ).toThrowError(expect.objectContaining({ code: "DUPLICATE_ROUTE" }));
+  });
+
+  it("accepts typed dynamic route segments", () => {
+    const sourcePage = feature.pages[0];
+    if (!sourcePage) throw new Error("Expected the contact page fixture.");
+    const dynamic = {
+      ...feature,
+      pages: [
+        {
+          ...sourcePage,
+          routes: {
+            mobile: {
+              params: {
+                contactId: { type: "reference", resource: "contacts" },
+              },
+              path: "/contacts/:contactId",
+            },
+            web: {
+              params: {
+                contactId: { type: "reference", resource: "contacts" },
+              },
+              path: "/contacts/:contactId",
+              seo: {
+                canonicalPath: "/contacts/:contactId",
+                description: "Contact details.",
+                index: false,
+                title: "Contact",
+              },
+            },
+          },
+        },
+      ],
+    } satisfies FeatureDefinition;
+
+    expect(
+      compileFeatureCatalog({
+        application: {
+          defaultLocale: "en",
+          description: "Application",
+          name: "Demo",
+          shortName: "Demo",
+        },
+        features: [dynamic],
+        schemaVersion: 1,
+      }).routes.map((route) => route.path),
+    ).toEqual(["/contacts/:contactId", "/contacts/:contactId"]);
+  });
+
+  it("rejects dynamic routes without matching typed parameters", () => {
+    const sourcePage = feature.pages[0];
+    if (!sourcePage) throw new Error("Expected page fixture");
+    expect(() =>
+      defineFeature({
+        ...feature,
+        pages: [
+          {
+            ...sourcePage,
+            routes: {
+              web: {
+                path: "/contacts/:contactId",
+                seo: {
+                  canonicalPath: "/contacts/:contactId",
+                  description: "Contact details.",
+                  index: false,
+                  title: "Contact",
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ).toThrowError(expect.objectContaining({ code: "INVALID_DEFINITION" }));
+  });
+
+  it.each([
+    [
+      "an unknown index field",
+      {
+        indexes: [{ fields: ["missing"], id: "by-missing" }],
+      },
+    ],
+    [
+      "a writable computed field",
+      {
+        fields: {
+          id: { required: true, schema: { type: "string" } },
+          label: {
+            computed: { dependencies: ["id"], handler: "contact.label" },
+            required: true,
+            schema: { type: "string" },
+          },
+        },
+      },
+    ],
+    [
+      "an invalid concurrency field",
+      { concurrency: { field: "name", mode: "version" } },
+    ],
+    [
+      "an invalid decimal definition",
+      {
+        fields: {
+          id: { required: true, schema: { type: "string" } },
+          price: {
+            required: true,
+            schema: { precision: 2, scale: 3, type: "decimal" },
+          },
+        },
+      },
+    ],
+  ])("rejects resources with %s", (_label, resourceOverride) => {
+    const source = feature.resources?.[0];
+    if (!source) throw new Error("Expected resource fixture");
+    const withoutSeed = Object.fromEntries(
+      Object.entries(source).filter(([key]) => key !== "seed"),
+    ) as unknown as FeatureResourceDefinition;
+    expect(() =>
+      defineFeature({
+        ...feature,
+        resources: [{ ...withoutSeed, ...resourceOverride }],
+      } as unknown as FeatureDefinition),
+    ).toThrowError(expect.objectContaining({ code: "INVALID_DEFINITION" }));
   });
 
   it.each([
