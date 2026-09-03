@@ -9,6 +9,15 @@ export {
   createAuthorizationRequest,
   exchangeAuthorizationCode,
 } from "./authorization-code";
+export type {
+  OidcIdentityVerifierPort,
+  OidcLoginTransaction,
+  OidcLoginTransactionStorePort,
+  OidcServerTokenVaultPort,
+  OidcTenantAccessPort,
+} from "./bff";
+export { beginOidcLogin, completeOidcLogin } from "./bff";
+export { createFetchOidcTokenTransport } from "./fetch-transport";
 export {
   createJoseOidcIdTokenVerifier,
   createJoseOidcTokenVerifier,
@@ -22,4 +31,4 @@ export type {
 } from "./server";
 export { createOidcTokenVerifier } from "./server";
 export type { NewOpaqueSession } from "./session";
-export { createOpaqueSession } from "./session";
+export { createOpaqueSession, digestSessionToken } from "./session";

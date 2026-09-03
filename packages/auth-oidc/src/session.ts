@@ -13,10 +13,19 @@ export interface NewOpaqueSession {
   readonly tokenDigest: SessionTokenDigest;
 }
 
+export function digestSessionToken(token: string): SessionTokenDigest {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    throw new OidcError("AUTHENTICATION_FAILED");
+  }
+  return createHash("sha256").update(token).digest("hex") as SessionTokenDigest;
+}
+
 export function createOpaqueSession(options: {
   readonly absoluteTtlSeconds: number;
   readonly identity: NormalizedOidcIdentity;
+  readonly idleTtlSeconds?: number;
   readonly now?: Date;
+  readonly tenantId: string;
 }): NewOpaqueSession {
   if (
     !Number.isSafeInteger(options.absoluteTtlSeconds) ||
@@ -27,18 +36,32 @@ export function createOpaqueSession(options: {
   }
   const now = options.now ?? new Date();
   if (Number.isNaN(now.getTime())) throw new OidcError("AUTHENTICATION_FAILED");
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(options.tenantId)) {
+    throw new OidcError("AUTHENTICATION_FAILED");
+  }
+  const idleTtlSeconds = options.idleTtlSeconds ?? 1_800;
+  if (
+    !Number.isSafeInteger(idleTtlSeconds) ||
+    idleTtlSeconds < 60 ||
+    idleTtlSeconds > options.absoluteTtlSeconds
+  ) {
+    throw new OidcError("AUTHENTICATION_FAILED");
+  }
   const token = randomBytes(32).toString("base64url");
-  const tokenDigest = createHash("sha256")
-    .update(token)
-    .digest("hex") as SessionTokenDigest;
+  const tokenDigest = digestSessionToken(token);
   const expiresAt = new Date(
     now.getTime() + options.absoluteTtlSeconds * 1_000,
   ).toISOString();
   return Object.freeze({
     record: Object.freeze({
+      createdAt: now.toISOString(),
       expiresAt,
       identity: options.identity,
+      idleExpiresAt: new Date(
+        now.getTime() + idleTtlSeconds * 1_000,
+      ).toISOString(),
       sessionId: randomUUID() as SessionId,
+      tenantId: options.tenantId,
     }),
     token,
     tokenDigest,

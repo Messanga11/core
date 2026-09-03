@@ -13,5 +13,10 @@
     "version": 3,
     "name": "outbox-dead-letters",
     "file": "003_outbox_dead_letters.sql"
+  },
+  {
+    "version": 4,
+    "name": "oidc-sessions",
+    "file": "004_oidc_sessions.sql"
   }
 ]

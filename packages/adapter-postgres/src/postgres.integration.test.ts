@@ -22,10 +22,15 @@ describePostgres("PostgreSQL 18 integration", () => {
       new URL("../migrations/003_outbox_dead_letters.sql", import.meta.url),
       "utf8",
     );
+    const sessionsSql = await readFile(
+      new URL("../migrations/004_oidc_sessions.sql", import.meta.url),
+      "utf8",
+    );
     const migrations = [
       { name: "tenancy-foundation", sql, version: 1 },
       { name: "feature-resources", sql: resourcesSql, version: 2 },
       { name: "outbox-dead-letters", sql: deadLettersSql, version: 3 },
+      { name: "oidc-sessions", sql: sessionsSql, version: 4 },
     ] as const;
 
     try {

@@ -3,15 +3,19 @@ import {
   createPostgresFeatureResourceAdapter,
   type PostgresFeatureResourceDefinition,
 } from "./feature-resource.js";
+import { createPostgresOidcTenantAccess } from "./oidc-tenant-access.js";
 import { createPostgresOutbox } from "./outbox.js";
+import { createPostgresSessionStore } from "./session-store.js";
 import type { SqlPoolPort } from "./sql.js";
 import { createPostgresTenancyUnitOfWork } from "./unit-of-work.js";
 
 export * from "./feature-resource.js";
 
 export * from "./migrations.js";
+export * from "./oidc-tenant-access.js";
 export * from "./outbox.js";
 export * from "./outbox-worker.js";
+export * from "./session-store.js";
 export * from "./sql.js";
 export * from "./unit-of-work.js";
 
@@ -42,6 +46,8 @@ export function createPostgresAdapter(options: PostgresAdapterOptions) {
       resources: options.featureResources ?? {},
     }),
     outbox: createPostgresOutbox(pool),
+    oidcTenantAccess: createPostgresOidcTenantAccess(pool),
+    sessions: createPostgresSessionStore(pool),
     tenancy: createPostgresTenancyUnitOfWork(pool),
   };
 }

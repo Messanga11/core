@@ -1,3 +1,4 @@
+export { createRedisOidcLoginTransactionStore } from "./auth-transaction";
 export type { RedisAdapterErrorCode } from "./errors";
 export { RedisAdapterError } from "./errors";
 export type {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createOpaqueSession } from "./session";
+import { createOpaqueSession, digestSessionToken } from "./session";
 
 describe("opaque OIDC sessions", () => {
   it("returns the token once and persists only its digest", () => {
@@ -11,11 +11,15 @@ describe("opaque OIDC sessions", () => {
         type: "human",
       },
       now: new Date("2026-09-03T12:00:00.000Z"),
+      tenantId: "tenant-1",
     });
 
     expect(session.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(session.tokenDigest).toMatch(/^[a-f0-9]{64}$/);
+    expect(digestSessionToken(session.token)).toBe(session.tokenDigest);
     expect(session.record.expiresAt).toBe("2026-09-03T13:00:00.000Z");
+    expect(session.record.idleExpiresAt).toBe("2026-09-03T12:30:00.000Z");
+    expect(session.record.tenantId).toBe("tenant-1");
     expect(session.record).not.toHaveProperty("token");
   });
 
@@ -28,6 +32,7 @@ describe("opaque OIDC sessions", () => {
           issuer: "https://identity.example.com/",
           type: "human",
         },
+        tenantId: "tenant-1",
       }),
     ).toThrow("AUTHENTICATION_FAILED");
   });

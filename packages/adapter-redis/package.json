@@ -47,6 +47,7 @@
     "@messanga11/core": ">=0.5.0"
   },
   "dependencies": {
+    "@messanga11/auth-oidc": "^0.1.1",
     "redis": "^6.2.1",
     "zod": "^4.4.3"
   }
