@@ -50,7 +50,7 @@ describe("PostgreSQL OIDC token vault", () => {
     const pool = { connect: async () => undefined, end: async () => undefined };
     expect(() =>
       createPostgresOidcTokenVault({
-        encryptionKey: "not-a-32-byte-base64-key",
+        encryptionKey: "",
         pool: pool as unknown as SqlPoolPort,
       }),
     ).toThrow("32-byte");
